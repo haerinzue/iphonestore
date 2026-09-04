@@ -1,48 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>ASGT iPhone Store</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGH iPhone Store</title>
+  <link rel="stylesheet" href="style.css">
+
+<style>
+#contactModal[hidden] { display: none !important; }
+#contactModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,.72);
+}
+#contactModal .modal-content {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 28px;
+  border-radius: 18px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  text-align: center;
+}
+#contactModal .modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  font-size: 30px;
+  cursor: pointer;
+}
+#contactModal .contact-actions {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0;
+}
+#contactModal .contact-actions a {
+  display: block;
+  padding: 13px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  background: #111;
+  color: #fff;
+}
+#contactModal .payment-note { margin-top: 12px; }
+</style>
+
 </head>
-
 <body>
-    <header>
-        <div class="brand">ASGT <span>iPhone Store</span></div>
-        <nav><a href="#iphones">iPhones</a><a href="/admin.html">Admin</a></nav>
-    </header>
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-purple"></div>
 
-    <main>
-        <section class="hero">
-            <div>
-                <p class="eyebrow">PREMIUM APPLE DEVICES</p>
-                <h1>Find your next<br><span>iPhone.</span></h1>
-                <p>Browse our available phones and view complete details, condition, storage, battery health and photos.</p>
-                <a href="#iphones" class="btn">Shop iPhones</a>
-            </div>
+  <header class="navbar">
+    <div class="brand">MGH <span>iPhone Store</span></div>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#iphones">iPhones</a>
+      <a href="#deals">Deals</a>
+    </nav>
+  </header>
 
-            <div class="hero-phone">
-                <img src="iphone-17-pro-max.png" alt="iPhone 17 Pro Max">
-            </div>
-        </section>
+  <main>
+    <section class="hero" id="home">
+      <div>
+        <p class="eyebrow">PREMIUM APPLE DEVICES</p>
+        <h1>Find your next<br><span>iPhone.</span></h1>
+        <p class="hero-text">Quality iPhones, transparent pricing, and a smooth buying experience.</p>
+        <a class="primary-btn" href="#iphones">Shop iPhones</a>
+      </div>
+      <div class="hero-phone">
+        <div class="phone">
+          <div class="camera"></div>
+          <div class="camera c2"></div>
+          <div class="camera c3"></div>
+          <div class="screen"></div>
+        </div>
+      </div>
+    </section>
 
-        <section id="iphones" class="section">
-            <div class="heading">
-                <div>
-                    <p class="eyebrow">AVAILABLE NOW</p>
-                    <h2>Our iPhones</h2>
-                </div>
-                <input id="search" placeholder="Search iPhone..." oninput="loadPhones()">
-            </div>
+    <section class="section" id="iphones">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">AVAILABLE NOW</p>
+          <h2>Latest iPhones</h2>
+        </div>
+        <input id="search" class="search" placeholder="Search iPhone..." oninput="renderProducts()">
+      </div>
+      <div class="products" id="products"></div>
+    </section>
 
-            <div id="products" class="products"></div>
-        </section>
-    </main>
+    <section class="deal" id="deals">
+      <div>
+        <p class="eyebrow">LIMITED OFFER</p>
+        <h2>Upgrade without the stress.</h2>
+        <p>Ask us about available installment plans, trade-ins, and bundle deals.</p>
+      </div>
+      <button class="primary-btn" onclick="contactSeller()">Contact Seller</button>
+    </section>
+  </main>
+  <div id="contactModal" class="modal" hidden>
+    <div class="modal-content">
+      <button type="button" class="modal-close" onclick="closeContactModal()" aria-label="Close">×</button>
+      <h2>Contact Seller</h2>
+      <p>Interested in this iPhone? Contact us to arrange a meetup.</p>
+      <div class="contact-actions">
+        <a id="facebookContactLink" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">
+          Contact on Facebook
+        </a>
+        <a href="tel:09451173532">Call / Message: 0945 117 3532</a>
+      </div>
+      <p class="payment-note"><strong>Meetup payment:</strong> Cash, GCash, or Bank Transfer.</p>
+    </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="store.js"></script>
+      <button class="primary-btn full" onclick="checkout()">Checkout</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+<script>
+function openContactModal() {
+  const modal = document.getElementById("contactModal");
+  if (modal) modal.hidden = false;
+}
+
+function closeContactModal() {
+  const modal = document.getElementById("contactModal");
+  if (modal) modal.hidden = true;
+}
+
+document.addEventListener("click", function (event) {
+  const product = event.target.closest(
+    ".product-card, .product, .phone-card, [data-product-id]"
+  );
+
+  if (product && !event.target.closest("a, button, input, select, textarea")) {
+    openContactModal();
+  }
+});
+
+document.addEventListener("click", function (event) {
+  if (event.target.id === "contactModal") closeContactModal();
+});
+</script>
+
 </body>
-
 </html>

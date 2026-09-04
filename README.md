@@ -1,23 +1,35 @@
-# MGH iPhone Store — Admin + Server
+# MGH iPhone Store — GitHub Pages + Supabase
 
-## Run locally
-1. Install Node.js.
-2. Open a terminal in this folder.
-3. Run:
-   npm install
-   npm start
-4. Open http://localhost:3000
-5. Admin panel: http://localhost:3000/admin.html
+## Setup
 
-## How it works
-- Storefront: `/`
-- Admin panel: `/admin.html`
-- Add phone details and upload up to 10 images.
-- Data is saved in `phones.json`.
-- Uploaded images are saved in `public/uploads/`.
+1. Put these files in your GitHub repository:
+   - index.html
+   - store.js
+   - style.css
+   - admin.html
+   - admin.js
+   - admin.css
 
-## Important
-This is a real small Node/Express server, unlike a GitHub Pages-only site.
-GitHub Pages cannot run the Node backend. To make the admin panel update the public store for everyone online, deploy this project to a Node-capable host such as Render, Railway, Fly.io, or your own VPS.
+2. Open Supabase Dashboard -> SQL Editor.
 
-For production, add admin authentication before making `/admin.html` public.
+3. Run `supabase-setup.sql`.
+
+4. Enable GitHub Pages for the repository.
+
+5. Storefront:
+   `https://YOUR-USERNAME.github.io/YOUR-REPO/`
+
+6. Admin:
+   `https://YOUR-USERNAME.github.io/YOUR-REPO/admin.html`
+
+The storefront reads published phones from Supabase, and the admin page uploads images to the
+`phone-images` bucket and saves the listing to the `phones` table.
+
+## Important security note
+
+The simple no-login setup allows anyone who can discover `admin.html` to insert/delete listings,
+because the browser uses the Supabase publishable key. This is suitable for testing but is NOT
+recommended for a real public store.
+
+For production, add Supabase Auth and change the INSERT/DELETE policies to authenticated/admin-only
+policies.
