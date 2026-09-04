@@ -1,6 +1,20 @@
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
 
+// Guard: if the Supabase library failed to load, show a visible error
+// instead of failing silently with a blank product list.
+if (!window.supabase) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const el = document.getElementById('products');
+        if (el) {
+            el.innerHTML =
+                '<div class="empty">Failed to load required library. ' +
+                'Check your internet connection or ad-blocker, then reload.</div>';
+        }
+    });
+    throw new Error('Supabase JS library not loaded — aborting store.js setup.');
+}
+
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY

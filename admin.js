@@ -1,6 +1,32 @@
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
 
+// Guard: if the Supabase library failed to load (blocked script, bad
+// CDN path, offline, etc.), window.supabase won't exist. Without this
+// check, everything below silently fails to run, the submit listener
+// never attaches, and the <form> falls back to a native GET submit
+// (which is why you'd see form fields show up in the URL bar).
+if (!window.supabase) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const status = document.getElementById('status');
+        const list = document.getElementById('list');
+        const msg = 'Failed to load required library (Supabase JS). ' +
+            'Check your internet connection or ad-blocker, then reload the page.';
+        if (status) status.textContent = msg;
+        if (list) list.innerHTML =
+            '<p style="color:#ff6b6b">' + msg + '</p>';
+        // Still stop the form from doing a native GET submit.
+        const form = document.getElementById('phoneForm');
+        if (form) {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                if (status) status.textContent = msg;
+            });
+        }
+    });
+    throw new Error('Supabase JS library not loaded — aborting admin.js setup.');
+}
+
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
