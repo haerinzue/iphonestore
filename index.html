@@ -171,6 +171,11 @@
     #contactModal .payment-note { margin-top: 12px; }
 
     @media (max-width: 800px) {
+      .mgh-hero-logo {
+        width: 240px;
+        height: 240px;
+      }
+
       .details-card {
         grid-template-columns: 1fr;
       }
@@ -239,7 +244,7 @@
         </a>
         <a href="tel:09451173532">Call / Message: 0945 117 3532</a>
       </div>
-      <p class="payment-note"><strong>Meetup Only:</strong> Cash, GCash, or Bank Transfer Upon Meetup.</p>
+      <p class="payment-note"><strong>Meetup payment:</strong> Cash, GCash, or Bank Transfer.</p>
     </div>
   </div>
 
@@ -431,6 +436,13 @@
     });
 
     loadPhones();
+    // Keep the storefront synchronized with Admin changes in real time.
+    db.channel('phones-live')
+      .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'phones' },
+          () => loadPhones())
+      .subscribe();
+
   </script>
 </body>
 </html>
