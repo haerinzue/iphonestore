@@ -1,24 +1,44 @@
+const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
 async function loadPhones() {
     const q = (document.getElementById('search').value || '').toLowerCase();
+    const productsEl = document.getElementById('products');
 
-    const res = await fetch('/api/phones');
-    const phones = await res.json();
+    const { data: phones, error } = await supabase
+        .from('phones')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const list = phones.filter(p =>
+    if (error) {
+        console.error('SELECT ERROR:', error);
+        productsEl.innerHTML =
+            '<div class="empty">Could not load listings. Please try again later.</div>';
+        return;
+    }
+
+    window.allPhones = phones || [];
+
+    const list = window.allPhones.filter(p =>
         (p.name + ' ' + p.storage + ' ' + p.color + ' ' + p.condition)
             .toLowerCase()
             .includes(q)
     );
 
-    document.getElementById('products').innerHTML = list.length
+    productsEl.innerHTML = list.length
         ? list.map(p => `
             <article class="product" onclick="showProduct('${p.id}')">
 
                 <div class="photo">
                     ${
                         p.images && p.images[0]
-                            ? `<img src="${p.images[0]}" alt="${esc(p.name)}">`
-                            : `<div class="placeholder"></div>`
+                            ? `<img src="${esc(p.images[0])}" alt="${esc(p.name)}">`
+                            : `<div class="placeholder"></div>`
                     }
                 </div>
 
@@ -44,8 +64,6 @@ async function loadPhones() {
             </article>
         `).join('')
         : '<div class="empty">No iPhones found.</div>';
-
-    window.allPhones = phones;
 }
 
 
@@ -74,8 +92,8 @@ function showProduct(id) {
             <div class="details-image">
                 ${
                     phone.images && phone.images[0]
-                        ? `<img src="${phone.images[0]}" alt="${esc(phone.name)}">`
-                        : `<div class="placeholder"></div>`
+                        ? `<img src="${esc(phone.images[0])}" alt="${esc(phone.name)}">`
+                        : `<div class="placeholder"></div>`
                 }
             </div>
 
