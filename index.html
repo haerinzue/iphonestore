@@ -1,48 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>ASGT iPhone Store</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGH iPhone Store</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <header>
-        <div class="brand">ASGT <span>iPhone Store</span></div>
-        <nav><a href="#iphones">iPhones</a><a href="/admin.html">Admin</a></nav>
-    </header>
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-purple"></div>
 
-    <main>
-        <section class="hero">
-            <div>
-                <p class="eyebrow">PREMIUM APPLE DEVICES</p>
-                <h1>Find your next<br><span>iPhone.</span></h1>
-                <p>Browse our available phones and view complete details, condition, storage, battery health and photos.</p>
-                <a href="#iphones" class="btn">Shop iPhones</a>
-            </div>
+  <header class="navbar">
+    <div class="brand">
+      <img src="YOUR_IPHONE_LOGO_IMAGE_LINK_HERE" alt="MGH iPhone Store Logo" style="height:42px;width:auto;object-fit:contain;">
+      <span>MGH iPhone Store</span>
+    </div>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#iphones">iPhones</a>
+      <a href="#deals">Contact</a>
+    </nav>
+  </header>
 
-            <div class="hero-phone">
-                <img src="iphone-17-pro-max.png" alt="iPhone 17 Pro Max">
-            </div>
-        </section>
+  <main>
+    <section class="hero" id="home">
+      <div>
+        <p class="eyebrow">PREMIUM APPLE DEVICES</p>
+        <h1>Find your next<br><span>iPhone.</span></h1>
+        <p class="hero-text">Quality iPhones, transparent pricing, and a simple meetup buying experience.</p>
+        <a class="primary-btn" href="#iphones">View iPhones</a>
+        <p style="margin-top:14px;">🤝 <strong>Meetup only:</strong> Cash, GCash, or Bank Transfer.</p>
+      </div>
+      <div class="hero-phone">
+        <div class="phone"><div class="camera"></div><div class="camera c2"></div><div class="camera c3"></div><div class="screen"></div></div>
+      </div>
+    </section>
 
-        <section id="iphones" class="section">
-            <div class="heading">
-                <div>
-                    <p class="eyebrow">AVAILABLE NOW</p>
-                    <h2>Our iPhones</h2>
-                </div>
-                <input id="search" placeholder="Search iPhone..." oninput="loadPhones()">
-            </div>
+    <section class="section" id="iphones">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">AVAILABLE NOW</p>
+          <h2>Latest iPhones</h2>
+        </div>
+        <input id="search" class="search" placeholder="Search iPhone..." oninput="renderProducts()">
+      </div>
+      <div class="products" id="products"></div>
+    </section>
 
-            <div id="products" class="products"></div>
-        </section>
-    </main>
+    <section class="deal" id="deals">
+      <div>
+        <p class="eyebrow">MEETUP PURCHASE</p>
+        <h2>Ready to buy?</h2>
+        <p>Click an iPhone above to see the seller contact details and arrange a meetup.</p>
+        <p><strong>Payment:</strong> Cash • GCash • Bank Transfer</p>
+      </div>
+      <a class="primary-btn" href="https://www.facebook.com/armanstephent" target="_blank" rel="noopener">Contact on Facebook</a>
+    </section>
+  </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="store.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="store.js"></script>
 </body>
-
 </html>

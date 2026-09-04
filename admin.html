@@ -18,7 +18,7 @@
     <main>
         <section class="card">
             <h1>Add iPhone</h1>
-            <form id="phoneForm" enctype="multipart/form-data">
+            <form id="phoneForm" enctype="multipart/form-data" onsubmit="return false;">
                 <div class="grid">
                     <label>Phone Name<input name="name" placeholder="iPhone 15 Pro Max" required></label>
                     <label>Price (₱)<input name="price" type="number" min="0" placeholder="44990" required></label>
@@ -41,8 +41,9 @@
             <div id="list"></div>
         </section>
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="admin.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="admin.js"></script>
 </body>
 
 </html>
