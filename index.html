@@ -1,212 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MGH iPhone Store</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGH iPhone Store</title>
+  <link rel="stylesheet" href="style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Keep the original MGH UI, but use the uploaded Supabase image at a controlled size. */
+    .product {
+      cursor: pointer;
+    }
 
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f0f2f5;color:#1c1e21}
-.header{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid #ddd;height:68px;display:flex;align-items:center;padding:0 28px;gap:25px}
-.logo{display:flex;align-items:center;gap:10px;min-width:230px}.logo img{width:40px;height:40px;object-fit:contain}.logo b{font-size:19px}.logo small{display:block;color:#65676b;font-size:11px;margin-top:2px}
-.search{flex:1;max-width:620px;margin:auto;background:#f0f2f5;border:0;border-radius:22px;padding:12px 18px;outline:0;font-size:14px}
-.nav{min-width:230px;text-align:right}.nav a{color:#1877f2;text-decoration:none;font-weight:600;font-size:14px}
-.layout{max-width:1300px;margin:auto;display:grid;grid-template-columns:230px 1fr;gap:20px;padding:22px}
-.sidebar{background:#fff;border-radius:10px;padding:18px;height:max-content;box-shadow:0 1px 2px #0001}.sidebar h3{margin:0 0 15px}.sidebar p{font-size:13px;color:#65676b}.filter{display:block;margin:12px 0;font-size:14px}.filter input{margin-right:8px;accent-color:#1877f2}
-.content h1{font-size:24px;margin:0}.sub{color:#65676b;font-size:13px;margin:6px 0 20px}
-.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.sort{border:1px solid #ccd0d5;background:#fff;border-radius:7px;padding:9px}
-.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
-.card{background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 1px 2px #0002;cursor:pointer;transition:.18s}.card:hover{transform:translateY(-3px);box-shadow:0 5px 15px #0002}
-.card-img{height:240px;background:#f5f6f7}.card-img img{width:100%;height:100%;object-fit:cover;display:block}
-.info{padding:13px}.name{font-size:16px;font-weight:700;margin:0 0 6px}.meta{font-size:13px;color:#65676b;line-height:1.5}.price{font-size:19px;font-weight:700;margin-top:9px}.view{color:#1877f2;font-size:13px;font-weight:600;margin-top:10px}
-.empty{text-align:center;padding:60px;color:#65676b;grid-column:1/-1;background:#fff;border-radius:10px}
-.overlay{display:none;position:fixed;inset:0;z-index:2000;background:#0008;align-items:center;justify-content:center;padding:20px}.overlay.show{display:flex}
-.modal{position:relative;width:min(850px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:12px;display:grid;grid-template-columns:48% 52%;box-shadow:0 20px 60px #0006}
-.close{position:absolute;right:12px;top:12px;width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:#333;font-size:25px;cursor:pointer;box-shadow:0 1px 5px #0003;z-index:5}
-.modal-photo{background:#111;min-height:500px;display:flex;align-items:center;justify-content:center;padding:15px}.modal-photo img{width:100%;height:470px;object-fit:contain}
-.modal-info{padding:28px}.modal-info h2{margin:0 0 7px;font-size:27px}.modal-price{font-size:25px;font-weight:700;margin-bottom:18px}.tags{display:flex;flex-wrap:wrap;gap:7px}.tag{background:#e7f3ff;color:#1877f2;border-radius:16px;padding:7px 10px;font-size:12px}.section{border-top:1px solid #ddd;margin-top:18px;padding-top:16px}.spec{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}.spec span:first-child{color:#65676b}.description{font-size:14px;line-height:1.6;color:#444;white-space:pre-wrap}
-.contact{background:#f0f2f5;border-radius:9px;padding:15px;margin-top:18px}.contact h3{margin:0 0 7px}.btn{display:block;text-align:center;text-decoration:none;border-radius:7px;padding:11px;margin-top:9px;font-weight:700}.fb{background:#1877f2;color:#fff}.phone{background:#fff;border:1px solid #ccd0d5;color:#1c1e21}.payment{margin-top:14px}.payments{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.pay{background:#fff;border:1px solid #ddd;border-radius:7px;padding:10px;text-align:center;font-size:12px}
-@media(max-width:850px){.layout{grid-template-columns:1fr;padding:12px}.sidebar{display:none}.header{padding:0 12px}.logo{min-width:auto}.logo small{display:none}.logo b{font-size:15px}.nav{display:none}.modal{grid-template-columns:1fr}.modal-photo{min-height:300px}.modal-photo img{height:330px}.products{grid-template-columns:repeat(2,minmax(0,1fr))}.card-img{height:200px}}
-@media(max-width:500px){.products{gap:10px}.card-img{height:175px}.info{padding:10px}.name{font-size:14px}.price{font-size:17px}.modal-info{padding:20px}}
-</style>
+    .product .photo {
+      height: 185px;
+      border-radius: 11px;
+      background: linear-gradient(145deg,#202d47,#111a2d);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+    }
+
+    .product .photo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 30px;
+      text-align: center;
+      color: #8d9ab3;
+    }
+
+    #product-details {
+      margin-top: 28px;
+    }
+
+    .details-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+      gap: 28px;
+      padding: 28px;
+      border: 1px solid #303c56;
+      border-radius: 16px;
+      background: rgba(24,34,53,.96);
+      box-shadow: 0 25px 70px rgba(0,0,0,.35);
+    }
+
+    .details-image {
+      height: 360px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #111a2d;
+    }
+
+    .details-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .details-info h2 {
+      margin-bottom: 10px;
+    }
+
+    .details-price {
+      font-size: 25px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .details-specs p,
+    .description p {
+      color: #9aa7bd;
+      line-height: 1.6;
+      margin: 7px 0;
+    }
+
+    .contact-box,
+    .payment-box {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid #303c56;
+      border-radius: 12px;
+      background: rgba(17,29,49,.75);
+    }
+
+    .contact-item {
+      margin-top: 9px;
+      color: #c9d1df;
+    }
+
+    .contact-item a {
+      color: #7fa8ff;
+    }
+
+    .payment-box {
+      color: #c9d1df;
+    }
+
+    .close-details {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      border: 0;
+      background: transparent;
+      color: #aeb9ce;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    #contactModal[hidden] { display: none !important; }
+    #contactModal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,.72);
+    }
+    #contactModal .modal-content {
+      position: relative;
+      width: min(420px, 100%);
+      padding: 28px;
+      border-radius: 18px;
+      background: #fff;
+      color: #111;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      text-align: center;
+    }
+    #contactModal .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      border: 0;
+      background: transparent;
+      font-size: 30px;
+      cursor: pointer;
+    }
+    #contactModal .contact-actions {
+      display: grid;
+      gap: 12px;
+      margin: 22px 0;
+    }
+    #contactModal .contact-actions a {
+      display: block;
+      padding: 13px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      background: #111;
+      color: #fff;
+    }
+    #contactModal .payment-note { margin-top: 12px; }
+
+    @media (max-width: 800px) {
+      .details-card {
+        grid-template-columns: 1fr;
+      }
+      .details-image {
+        height: 300px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<header class="header">
-  <div class="logo">
-    <!-- CHANGE ONLY THIS SRC -->
-    <img src="YOUR_IPHONE_LOGO_IMAGE_LINK_HERE" alt="MGH">
-    <div><b>MGH iPhone Store</b><small>Marketplace • Meetup Only</small></div>
-  </div>
-  <input id="search" class="search" type="search" placeholder="Search iPhone, storage, color..." autocomplete="off">
-  <div class="nav"><a href="#products">iPhones</a></div>
-</header>
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-purple"></div>
 
-<div class="layout">
-  <aside class="sidebar">
-    <h3>Marketplace</h3>
-    <p>📍 Philippines</p>
-    <hr>
-    <strong>Categories</strong>
-    <label class="filter"><input type="checkbox" value="iPhone 17">iPhone 17</label>
-    <label class="filter"><input type="checkbox" value="iPhone 16">iPhone 16</label>
-    <label class="filter"><input type="checkbox" value="iPhone 15">iPhone 15</label>
-    <label class="filter"><input type="checkbox" value="iPhone 14">iPhone 14</label>
-    <label class="filter"><input type="checkbox" value="iPhone 13">iPhone 13</label>
-    <hr>
-    <strong>Storage</strong>
-    <label class="filter"><input type="checkbox" value="128GB">128GB</label>
-    <label class="filter"><input type="checkbox" value="256GB">256GB</label>
-    <label class="filter"><input type="checkbox" value="512GB">512GB</label>
-    <label class="filter"><input type="checkbox" value="1TB">1TB</label>
-  </aside>
+  <header class="navbar">
+    <div class="brand">MGH <span>iPhone Store</span></div>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#iphones">iPhones</a>
+      <a href="#deals">Deals</a>
+    </nav>
+  </header>
 
-  <main class="content">
-    <div class="toolbar">
-      <div><h1>Latest iPhones</h1><div id="count" class="sub">Loading listings...</div></div>
-      <select id="sort" class="sort">
-        <option value="newest">Newest</option>
-        <option value="low">Price: Low to High</option>
-        <option value="high">Price: High to Low</option>
-      </select>
-    </div>
-    <div id="products" class="products"></div>
-  </main>
-</div>
-
-<div id="overlay" class="overlay" onclick="closeIfBackground(event)">
-  <div id="modal" class="modal" onclick="event.stopPropagation()"></div>
-</div>
-
-<script>
-const SUPABASE_URL="https://fvxpfpqkdsznvvreicfc.supabase.co";
-const SUPABASE_KEY="sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB";
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let phones=[];
-
-document.addEventListener("DOMContentLoaded",()=>{
-  document.getElementById("search").addEventListener("input",render);
-  document.getElementById("sort").addEventListener("change",render);
-  document.querySelectorAll(".filter input").forEach(x=>x.addEventListener("change",render));
-  loadPhones();
-});
-
-async function loadPhones(){
-  const box=document.getElementById("products");
-  box.innerHTML='<div class="empty">Loading iPhones...</div>';
-
-  const {data,error}=await supabaseClient
-    .from("phones")
-    .select("*")
-    .order("created_at",{ascending:false});
-
-  if(error){
-    console.error(error);
-    box.innerHTML='<div class="empty">Could not load listings. Please refresh.</div>';
-    return;
-  }
-  phones=data||[];
-  render();
-}
-
-function render(){
-  const search=document.getElementById("search").value.toLowerCase().trim();
-  const checked=[...document.querySelectorAll(".filter input:checked")].map(x=>x.value.toLowerCase());
-
-  let list=phones.filter(p=>{
-    const text=[p.name,p.storage,p.color,p.condition,p.battery,p.description].filter(Boolean).join(" ").toLowerCase();
-    const searchOK=text.includes(search);
-    const filterOK=!checked.length||checked.some(v=>text.includes(v));
-    return searchOK&&filterOK;
-  });
-
-  const sort=document.getElementById("sort").value;
-  if(sort==="low")list.sort((a,b)=>Number(a.price||0)-Number(b.price||0));
-  if(sort==="high")list.sort((a,b)=>Number(b.price||0)-Number(a.price||0));
-  if(sort==="newest")list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-
-  document.getElementById("count").textContent=`${list.length} listing${list.length===1?"":"s"}`;
-
-  if(!list.length){
-    document.getElementById("products").innerHTML='<div class="empty">No iPhones found.</div>';
-    return;
-  }
-
-  document.getElementById("products").innerHTML=list.map(p=>{
-    const image=Array.isArray(p.images)?p.images[0]:null;
-    return `<article class="card" onclick="openProduct('${p.id}')">
-      <div class="card-img">${image?`<img src="${esc(image)}" alt="${esc(p.name)}" loading="lazy">`:""}</div>
-      <div class="info">
-        <div class="name">${esc(p.name)}</div>
-        <div class="meta">${esc(p.storage||"")} ${p.color?"• "+esc(p.color):""}<br>${esc(p.condition||"Condition not specified")}<br>Battery: ${esc(p.battery||"Not specified")}</div>
-        <div class="price">₱${Number(p.price||0).toLocaleString("en-PH")}</div>
-        <div class="view">View Details →</div>
+  <main>
+    <section class="hero" id="home">
+      <div>
+        <p class="eyebrow">PREMIUM APPLE DEVICES</p>
+        <h1>Find your next<br><span>iPhone.</span></h1>
+        <p class="hero-text">Quality iPhones, transparent pricing, and a smooth buying experience.</p>
+        <a class="primary-btn" href="#iphones">Shop iPhones</a>
       </div>
-    </article>`;
-  }).join("");
-}
-
-function openProduct(id){
-  const p=phones.find(x=>String(x.id)===String(id));
-  if(!p)return;
-  const image=Array.isArray(p.images)?p.images[0]:null;
-
-  document.getElementById("modal").innerHTML=`
-    <button class="close" onclick="closeProduct()">×</button>
-    <div class="modal-photo">${image?`<img src="${esc(image)}" alt="${esc(p.name)}">`:"No image"}</div>
-    <div class="modal-info">
-      <h2>${esc(p.name)}</h2>
-      <div class="modal-price">₱${Number(p.price||0).toLocaleString("en-PH")}</div>
-      <div class="tags">
-        ${p.storage?`<span class="tag">${esc(p.storage)}</span>`:""}
-        ${p.color?`<span class="tag">${esc(p.color)}</span>`:""}
-        ${p.condition?`<span class="tag">${esc(p.condition)}</span>`:""}
-      </div>
-
-      <div class="section">
-        <strong>Details</strong>
-        <div class="spec"><span>Storage</span><span>${esc(p.storage||"Not specified")}</span></div>
-        <div class="spec"><span>Color</span><span>${esc(p.color||"Not specified")}</span></div>
-        <div class="spec"><span>Condition</span><span>${esc(p.condition||"Not specified")}</span></div>
-        <div class="spec"><span>Battery Health</span><span>${esc(p.battery||"Not specified")}</span></div>
-      </div>
-
-      ${p.description?`<div class="section"><strong>Description</strong><div class="description">${esc(p.description)}</div></div>`:""}
-
-      <div class="contact">
-        <h3>Interested in this unit?</h3>
-        <div style="font-size:13px;color:#65676b">Arrange a meetup with us.</div>
-        <a class="btn fb" href="https://www.facebook.com/armanstephent" target="_blank" rel="noopener noreferrer">📘 Contact on Facebook</a>
-        <a class="btn phone" href="tel:09451173532">📱 0945 117 3532</a>
-        <div class="payment">
-          <strong>Meetup Payment</strong>
-          <div style="font-size:12px;color:#65676b;margin:5px 0 10px">Payment during meetup only.</div>
-          <div class="payments">
-            <div class="pay">💵 Cash</div>
-            <div class="pay">📱 GCash</div>
-            <div class="pay">🏦 Bank Transfer</div>
-          </div>
+      <div class="hero-phone">
+        <div class="phone">
+          <div class="camera"></div>
+          <div class="camera c2"></div>
+          <div class="camera c3"></div>
+          <div class="screen"></div>
         </div>
       </div>
-    </div>`;
+    </section>
 
-  document.getElementById("overlay").classList.add("show");
-  document.body.style.overflow="hidden";
-}
+    <section class="section" id="iphones">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">AVAILABLE NOW</p>
+          <h2>Latest iPhones</h2>
+        </div>
+        <input id="search" class="search" placeholder="Search iPhone..." oninput="renderProducts()">
+      </div>
+      <div class="products" id="products"></div>
+    </section>
 
-function closeProduct(){
-  document.getElementById("overlay").classList.remove("show");
-  document.body.style.overflow="";
-}
-function closeIfBackground(e){if(e.target.id==="overlay")closeProduct();}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProduct();});
+    <section class="deal" id="deals">
+      <div>
+        <p class="eyebrow">LIMITED OFFER</p>
+        <h2>Upgrade without the stress.</h2>
+        <p>Ask us about available installment plans, trade-ins, and bundle deals.</p>
+      </div>
+      <button class="primary-btn" onclick="contactSeller()">Contact Seller</button>
+    </section>
+  </main>
 
-function esc(v){
-  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-}
-</script>
+  <div id="contactModal" class="modal" hidden>
+    <div class="modal-content">
+      <button type="button" class="modal-close" onclick="closeContactModal()" aria-label="Close">×</button>
+      <h2>Contact Seller</h2>
+      <p>Interested in this iPhone? Contact us to arrange a meetup.</p>
+      <div class="contact-actions">
+        <a href="https://www.facebook.com/armanstephent" target="_blank" rel="noopener noreferrer">
+          Contact on Facebook
+        </a>
+        <a href="tel:09451173532">Call / Message: 0945 117 3532</a>
+      </div>
+      <p class="payment-note"><strong>Meetup payment:</strong> Cash, GCash, or Bank Transfer.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
+
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.allPhones = [];
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[m]));
+    }
+
+    async function loadPhones() {
+      const productsEl = document.getElementById('products');
+
+      const { data: phones, error } = await db
+        .from('phones')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error(error);
+        productsEl.innerHTML =
+          '<div class="empty">Could not load listings. Please refresh the page.</div>';
+        return;
+      }
+
+      window.allPhones = phones || [];
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const productsEl = document.getElementById('products');
+      const q = (document.getElementById('search').value || '').toLowerCase().trim();
+
+      const list = window.allPhones.filter(p =>
+        [
+          p.name,
+          p.storage,
+          p.color,
+          p.condition,
+          p.battery
+        ].join(' ').toLowerCase().includes(q)
+      );
+
+      productsEl.innerHTML = list.length
+        ? list.map(p => `
+          <article class="product" data-product-id="${esc(p.id)}" onclick="showProduct('${esc(p.id)}')">
+            <div class="photo">
+              ${
+                p.images && p.images[0]
+                  ? `<img src="${esc(p.images[0])}" alt="${esc(p.name)}" loading="lazy">`
+                  : '<div class="placeholder"></div>'
+              }
+            </div>
+
+            <h3>${esc(p.name)}</h3>
+
+            <p>
+              ${esc(p.storage || '')}
+              ${p.color ? ' • ' + esc(p.color) : ''}
+            </p>
+
+            <p>
+              Condition: ${esc(p.condition || 'Not specified')}<br>
+              Battery Health: ${esc(p.battery || 'Not specified')}
+            </p>
+
+            <div class="price">
+              ₱${Number(p.price || 0).toLocaleString('en-PH')}
+            </div>
+
+            <div class="view-details">
+              View Details →
+            </div>
+          </article>
+        `).join('')
+        : '<div class="empty">No iPhones found.</div>';
+    }
+
+    function showProduct(id) {
+      const phone = window.allPhones.find(p => String(p.id) === String(id));
+      if (!phone) return;
+
+      let details = document.getElementById('product-details');
+
+      if (!details) {
+        details = document.createElement('section');
+        details.id = 'product-details';
+        document.getElementById('iphones').appendChild(details);
+      }
+
+      details.innerHTML = `
+        <div class="details-card">
+          <button class="close-details" onclick="closeProduct(event)" aria-label="Close">×</button>
+
+          <div class="details-image">
+            ${
+              phone.images && phone.images[0]
+                ? `<img src="${esc(phone.images[0])}" alt="${esc(phone.name)}">`
+                : '<div class="placeholder"></div>'
+            }
+          </div>
+
+          <div class="details-info">
+            <p class="eyebrow">IPHONE DETAILS</p>
+            <h2>${esc(phone.name)}</h2>
+
+            <div class="details-price">
+              ₱${Number(phone.price || 0).toLocaleString('en-PH')}
+            </div>
+
+            <div class="details-specs">
+              <p><strong>Storage:</strong> ${esc(phone.storage || 'Not specified')}</p>
+              <p><strong>Color:</strong> ${esc(phone.color || 'Not specified')}</p>
+              <p><strong>Condition:</strong> ${esc(phone.condition || 'Not specified')}</p>
+              <p><strong>Battery Health:</strong> ${esc(phone.battery || 'Not specified')}</p>
+            </div>
+
+            ${
+              phone.description
+                ? `<div class="description">
+                    <strong>Description</strong>
+                    <p>${esc(phone.description)}</p>
+                   </div>`
+                : ''
+            }
+
+            <div class="contact-box">
+              <h3>Interested in this iPhone?</h3>
+              <p>Contact us directly to arrange a meet-up.</p>
+
+              <div class="contact-item">
+                📘 <strong>Facebook:</strong>
+                <a href="https://www.facebook.com/armanstephent" target="_blank"
+                   rel="noopener noreferrer" onclick="event.stopPropagation()">
+                  Visit our Facebook
+                </a>
+              </div>
+
+              <div class="contact-item">
+                📱 <strong>Mobile:</strong>
+                <a href="tel:09451173532" onclick="event.stopPropagation()">
+                  0945 117 3532
+                </a>
+              </div>
+            </div>
+
+            <div class="payment-box">
+              <strong>Meetup payment:</strong> Cash, GCash, or Bank Transfer.
+            </div>
+          </div>
+        </div>
+      `;
+
+      details.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function closeProduct(event) {
+      if (event) event.stopPropagation();
+      const details = document.getElementById('product-details');
+      if (details) details.remove();
+    }
+
+    function contactSeller() {
+      openContactModal();
+    }
+
+    function openContactModal() {
+      document.getElementById('contactModal').hidden = false;
+    }
+
+    function closeContactModal() {
+      document.getElementById('contactModal').hidden = true;
+    }
+
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+      if (e.target === this) closeContactModal();
+    });
+
+    loadPhones();
+  </script>
 </body>
 </html>
