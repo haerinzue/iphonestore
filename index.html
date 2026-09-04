@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ASGT iPhone Store</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">ASGT <span>iPhone Store</span></div>
+        <nav><a href="#iphones">iPhones</a><a href="/admin.html">Admin</a></nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <p class="eyebrow">PREMIUM APPLE DEVICES</p>
+                <h1>Find your next<br><span>iPhone.</span></h1>
+                <p>Browse our available phones and view complete details, condition, storage, battery health and photos.</p>
+                <a href="#iphones" class="btn">Shop iPhones</a>
+            </div>
+
+            <div class="hero-phone">
+                <img src="images/iphone-17-pro-max.png" alt="iPhone 17 Pro Max">
+            </div>
+        </section>
+
+        <section id="iphones" class="section">
+            <div class="heading">
+                <div>
+                    <p class="eyebrow">AVAILABLE NOW</p>
+                    <h2>Our iPhones</h2>
+                </div>
+                <input id="search" placeholder="Search iPhone..." oninput="loadPhones()">
+            </div>
+
+            <div id="products" class="products"></div>
+        </section>
+    </main>
+
+    <script src="store.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ASGT Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+    <header>
+        <div>
+            <div class="brand">ASGT <span>Store Admin</span></div>
+            <p>Manage your iPhone listings</p>
+        </div><a href="/" class="back">View Store</a>
+    </header>
+    <main>
+        <section class="card">
+            <h1>Add iPhone</h1>
+            <form id="phoneForm" enctype="multipart/form-data">
+                <div class="grid">
+                    <label>Phone Name<input name="name" placeholder="iPhone 15 Pro Max" required></label>
+                    <label>Price (₱)<input name="price" type="number" min="0" placeholder="44990" required></label>
+                    <label>Storage<input name="storage" placeholder="256GB"></label>
+                    <label>Color<input name="color" placeholder="Natural Titanium"></label>
+                    <label>Condition<input name="condition" placeholder="Excellent / Brand New"></label>
+                    <label>Battery Health<input name="battery" placeholder="95%"></label>
+                    <label class="wide">Description<textarea name="description"
+                            placeholder="Complete details, inclusions, issues, warranty, etc."></textarea></label>
+                    <label class="wide">Phone Images<input name="images" type="file" accept="image/*" multiple
+                            required><small>You can select multiple photos.</small></label>
+                </div>
+                <button class="btn" type="submit">Upload & Publish</button><span id="status"></span>
+            </form>
+        </section>
+        <section class="card">
+            <div class="list-head">
+                <h2>Current Listings</h2><button class="danger" onclick="deleteAll()">Delete All</button>
+            </div>
+            <div id="list"></div>
+        </section>
+    </main>
+    <script src="admin.js"></script>
+</body>
+
+</html>

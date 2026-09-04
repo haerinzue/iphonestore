@@ -1,0 +1,208 @@
+async function loadPhones() {
+    const q = (document.getElementById('search').value || '').toLowerCase();
+
+    const res = await fetch('/api/phones');
+    const phones = await res.json();
+
+    const list = phones.filter(p =>
+        (p.name + ' ' + p.storage + ' ' + p.color + ' ' + p.condition)
+            .toLowerCase()
+            .includes(q)
+    );
+
+    document.getElementById('products').innerHTML = list.length
+        ? list.map(p => `
+            <article class="product" onclick="showProduct('${p.id}')">
+
+                <div class="photo">
+                    ${
+                        p.images && p.images[0]
+                            ? `<img src="${p.images[0]}" alt="${esc(p.name)}">`
+                            : `<div class="placeholder"></div>`
+                    }
+                </div>
+
+                <h3>${esc(p.name)}</h3>
+
+                <div class="meta">
+                    ${esc(p.storage || '')}
+                    ${p.color ? ' • ' + esc(p.color) : ''}
+                    <br>
+                    Condition: ${esc(p.condition || 'Not specified')}
+                    <br>
+                    Battery Health: ${esc(p.battery || 'Not specified')}
+                </div>
+
+                <div class="price">
+                    ₱${Number(p.price || 0).toLocaleString('en-PH')}
+                </div>
+
+                <div class="view-details">
+                    View Details →
+                </div>
+
+            </article>
+        `).join('')
+        : '<div class="empty">No iPhones found.</div>';
+
+    window.allPhones = phones;
+}
+
+
+function showProduct(id) {
+
+    const phone = window.allPhones.find(p => String(p.id) === String(id));
+
+    if (!phone) return;
+
+    let details = document.getElementById('product-details');
+
+    if (!details) {
+        details = document.createElement('section');
+        details.id = 'product-details';
+
+        document.getElementById('iphones').appendChild(details);
+    }
+
+    details.innerHTML = `
+        <div class="details-card">
+
+            <button class="close-details" onclick="closeProduct(event)">
+                ×
+            </button>
+
+            <div class="details-image">
+                ${
+                    phone.images && phone.images[0]
+                        ? `<img src="${phone.images[0]}" alt="${esc(phone.name)}">`
+                        : `<div class="placeholder"></div>`
+                }
+            </div>
+
+            <div class="details-info">
+
+                <p class="eyebrow">IPHONE DETAILS</p>
+
+                <h2>${esc(phone.name)}</h2>
+
+                <div class="details-price">
+                    ₱${Number(phone.price || 0).toLocaleString('en-PH')}
+                </div>
+
+                <div class="details-specs">
+
+                    <p>
+                        <strong>Storage:</strong>
+                        ${esc(phone.storage || 'Not specified')}
+                    </p>
+
+                    <p>
+                        <strong>Color:</strong>
+                        ${esc(phone.color || 'Not specified')}
+                    </p>
+
+                    <p>
+                        <strong>Condition:</strong>
+                        ${esc(phone.condition || 'Not specified')}
+                    </p>
+
+                    <p>
+                        <strong>Battery Health:</strong>
+                        ${esc(phone.battery || 'Not specified')}
+                    </p>
+
+                </div>
+
+                ${
+                    phone.description
+                        ? `
+                            <div class="description">
+                                <strong>Description</strong>
+                                <p>${esc(phone.description)}</p>
+                            </div>
+                        `
+                        : ''
+                }
+
+                <div class="contact-box">
+
+                    <h3>Interested in this iPhone?</h3>
+
+                    <p>Contact us directly to arrange a meet-up.</p>
+
+                    <div class="contact-item">
+                        📘
+                        <strong>Facebook:</strong>
+                        <a
+                            href="https://www.facebook.com/armanstephent"
+                            target="_blank"
+                            onclick="event.stopPropagation()"
+                        >
+                            Visit our Facebook
+                        </a>
+                    </div>
+
+                    <div class="contact-item">
+                        📱
+                        <strong>Mobile:</strong>
+                        <a href="tel:09451173532"
+                           onclick="event.stopPropagation()">
+                            YOUR MOBILE NUMBER
+                        </a>
+                    </div>
+
+                </div>
+
+                <div class="payment-box">
+
+                    <h3>Payment Method</h3>
+
+                    <p>🤝 Meet-up Only</p>
+
+                    <div class="payment-options">
+                        <span>💵 Cash</span>
+                        <span>📱 GCash</span>
+                        <span>🏦 Bank Transfer</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    details.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+
+function closeProduct(event) {
+
+    event.stopPropagation();
+
+    const details = document.getElementById('product-details');
+
+    if (details) {
+        details.remove();
+    }
+}
+
+
+function esc(s) {
+    return String(s ?? '').replace(
+        /[&<>"']/g,
+        m => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[m])
+    );
+}
+
+
+loadPhones();
