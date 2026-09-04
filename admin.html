@@ -2,388 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>ASGT Admin</title>
-  <link rel="stylesheet" href="admin.css?v=20260905-2">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ASGT Admin — Secure</title>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-  <header>
-    <div>
+  <div id="loginScreen" class="auth-wrap">
+    <section class="auth-card">
       <div class="brand">ASGT <span>Store Admin</span></div>
-      <p>Manage your iPhone listings</p>
-    </div>
-    <a href="./" class="back">View Store</a>
-  </header>
-
-  <main>
-    <section class="card">
-      <h1 id="formTitle">Add iPhone</h1>
-
-      <form id="phoneForm" enctype="multipart/form-data">
-        <div class="grid">
-          <label>Phone Name
-            <input name="name" placeholder="iPhone 15 Pro Max" required>
-          </label>
-
-          <label>Price (₱)
-            <input name="price" type="number" min="0" placeholder="44990" required>
-          </label>
-
-          <label>Storage
-            <input name="storage" placeholder="256GB">
-          </label>
-
-          <label>Color
-            <input name="color" placeholder="Natural Titanium">
-          </label>
-
-          <label>Condition
-            <input name="condition" placeholder="Excellent / Brand New">
-          </label>
-
-          <label>Battery Health
-            <input name="battery" placeholder="95%">
-          </label>
-
-          <label class="wide">Description
-            <textarea name="description" placeholder="Complete details, inclusions, issues, warranty, etc."></textarea>
-          </label>
-
-          <label class="wide">Phone Images
-            <input id="images" name="images" type="file" accept="image/*" multiple>
-            <small id="imageHelp">Select photos when adding a listing. When editing, leave empty to keep the current photos.</small>
-          </label>
-        </div>
-
-        <button class="btn" id="submitBtn" type="submit">Upload &amp; Publish</button>
-        <button class="btn" id="cancelEditBtn" type="button" style="display:none;background:#4b5563" onclick="cancelEdit()">Cancel Edit</button>
-        <button class="btn" id="refreshBtn" type="button" style="background:#26344d" onclick="refreshListings()">Refresh Listings</button>
-        <span id="status"></span>
+      <h1>Admin Login</h1>
+      <p>Sign in with your authorized admin account.</p>
+      <form id="loginForm">
+        <label>Email<input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="btn full" type="submit">Sign In</button>
+        <div id="loginStatus" class="status"></div>
       </form>
     </section>
+  </div>
 
-    <section class="card">
-      <div class="list-head">
-        <h2>Current Listings <span id="count" style="font-size:14px;color:#7f8da7"></span></h2>
-        <button class="danger" type="button" onclick="deleteAll()">Delete All</button>
+  <div id="app" hidden>
+    <header>
+      <div>
+        <div class="brand">ASGT <span>Store Admin</span></div>
+        <p>Manage your iPhone listings</p>
       </div>
-      <div id="list">
-        <p style="color:#7f8da7">Loading listings...</p>
+      <div class="header-actions">
+        <a href="/" class="back">View Store</a>
+        <button id="logoutBtn" class="logout">Log Out</button>
       </div>
-    </section>
-  </main>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="form-head">
+          <div>
+            <h1 id="formTitle">Add iPhone</h1>
+            <p id="formHint">Publish a new listing to the store.</p>
+          </div>
+        </div>
+        <form id="phoneForm" enctype="multipart/form-data">
+          <input type="hidden" name="id" id="phoneId">
+          <div class="grid">
+            <label>Phone Name<input name="name" placeholder="iPhone 15 Pro Max" required></label>
+            <label>Price (₱)<input name="price" type="number" min="0" placeholder="44990" required></label>
+            <label>Storage<input name="storage" placeholder="256GB"></label>
+            <label>Color<input name="color" placeholder="Natural Titanium"></label>
+            <label>Condition<input name="condition" placeholder="Excellent / Brand New"></label>
+            <label>Battery Health<input name="battery" placeholder="95%"></label>
+            <label class="wide">Description<textarea name="description" placeholder="Complete details, inclusions, issues, warranty, etc."></textarea></label>
+            <label class="wide">Phone Images
+              <input name="images" type="file" accept="image/*" multiple>
+              <small id="imageHelp">Select one or more photos. New listings require at least one image. When editing, leave empty to keep the current photos.</small>
+            </label>
+          </div>
+          <button id="submitBtn" class="btn" type="submit">Upload &amp; Publish</button>
+          <button id="cancelEditBtn" class="secondary" type="button" hidden>Cancel Edit</button>
+          <span id="status" class="status"></span>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="list-head">
+          <div>
+            <h2>Current Listings</h2>
+            <p class="muted">Changes are saved directly to Supabase.</p>
+          </div>
+          <div class="list-actions">
+            <button id="refreshBtn" class="secondary">Refresh</button>
+            <button id="deleteAllBtn" class="danger">Delete All</button>
+          </div>
+        </div>
+        <div id="list"><p class="muted">Loading...</p></div>
+      </section>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let phones = [];
-    let editingId = null;
-
-    const $ = id => document.getElementById(id);
-
-    function esc(value) {
-      return String(value ?? '').replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-      }[m]));
-    }
-
-    async function refreshListings() {
-      $('list').innerHTML = '<p style="color:#7f8da7">Loading listings from Supabase...</p>';
-      $('status').textContent = '';
-
-      const { data, error } = await db
-        .from('phones')
-        .select('id,name,price,storage,color,condition,battery,description,images,created_at')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('ADMIN LIST ERROR:', error);
-        $('count').textContent = '';
-        $('list').innerHTML =
-          '<p style="color:#ff6b6b"><strong>Supabase error:</strong> ' +
-          esc(error.message) + '</p>';
-        return;
-      }
-
-      phones = data || [];
-      $('count').textContent = '(' + phones.length + ')';
-
-      if (!phones.length) {
-        $('list').innerHTML =
-          '<p style="color:#7f8da7">No listings found in the Supabase <strong>phones</strong> table.</p>';
-        return;
-      }
-
-      $('list').innerHTML = phones.map(p => `
-        <div class="item">
-          <img class="thumb"
-               src="${esc(p.images?.[0] || '')}"
-               alt="${esc(p.name || 'iPhone')}">
-
-          <div class="item-info">
-            <strong>${esc(p.name || 'Unnamed iPhone')}</strong>
-            <div>
-              ₱${Number(p.price || 0).toLocaleString('en-PH')}
-              • ${esc(p.storage || '')}
-              • ${esc(p.color || '')}
-              • ${esc(p.condition || '')}
-            </div>
-            <div>Battery: ${esc(p.battery || 'N/A')}</div>
-          </div>
-
-          <button class="btn" type="button" onclick="editPhone('${esc(p.id)}')">Edit</button>
-          <button class="delete" type="button" onclick="removePhone('${esc(p.id)}')">Delete</button>
-        </div>
-      `).join('');
-    }
-
-    function editPhone(id) {
-      const p = phones.find(x => String(x.id) === String(id));
-      if (!p) return;
-
-      editingId = p.id;
-
-      const form = $('phoneForm');
-      form.elements.name.value = p.name || '';
-      form.elements.price.value = p.price ?? '';
-      form.elements.storage.value = p.storage || '';
-      form.elements.color.value = p.color || '';
-      form.elements.condition.value = p.condition || '';
-      form.elements.battery.value = p.battery || '';
-      form.elements.description.value = p.description || '';
-      $('images').value = '';
-
-      $('formTitle').textContent = 'Edit iPhone';
-      $('submitBtn').textContent = 'Save Changes';
-      $('cancelEditBtn').style.display = 'inline-block';
-      $('imageHelp').textContent =
-        'Optional: select new photos to replace the current photos. Leave empty to keep the current photos.';
-      $('status').textContent = 'Editing: ' + (p.name || 'listing');
-
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
-
-    function cancelEdit() {
-      editingId = null;
-      $('phoneForm').reset();
-      $('formTitle').textContent = 'Add iPhone';
-      $('submitBtn').textContent = 'Upload & Publish';
-      $('cancelEditBtn').style.display = 'none';
-      $('imageHelp').textContent =
-        'Select photos when adding a listing. When editing, leave empty to keep the current photos.';
-      $('status').textContent = '';
-    }
-
-    $('phoneForm').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const form = e.target;
-      const status = $('status');
-      const submitBtn = $('submitBtn');
-      const files = $('images').files;
-      const fd = new FormData(form);
-
-      submitBtn.disabled = true;
-
-      try {
-        let imageUrls = null;
-        const uploadedPaths = [];
-
-        if (!editingId && !files.length) {
-          throw new Error('Please select at least one image.');
-        }
-
-        if (files.length) {
-          imageUrls = [];
-
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-
-            if (!file.type.startsWith('image/')) {
-              throw new Error(file.name + ' is not an image.');
-            }
-
-            if (file.size > 10 * 1024 * 1024) {
-              throw new Error(file.name + ' is larger than 10MB.');
-            }
-
-            status.textContent = 'Uploading image ' + (i + 1) + ' of ' + files.length + '...';
-
-            const path = crypto.randomUUID() + '-' + file.name;
-
-            const { error: uploadError } = await db.storage
-              .from('phone-images')
-              .upload(path, file, {
-                contentType:file.type,
-                upsert:false
-              });
-
-            if (uploadError) throw new Error('Image upload failed: ' + uploadError.message);
-
-            uploadedPaths.push(path);
-
-            const { data } = db.storage
-              .from('phone-images')
-              .getPublicUrl(path);
-
-            imageUrls.push(data.publicUrl);
-          }
-        }
-
-        const payload = {
-          name: fd.get('name'),
-          price: Number(fd.get('price')),
-          storage: fd.get('storage'),
-          color: fd.get('color'),
-          condition: fd.get('condition'),
-          battery: fd.get('battery'),
-          description: fd.get('description')
-        };
-
-        if (editingId) {
-          const existing = phones.find(x => String(x.id) === String(editingId));
-          if (imageUrls) payload.images = imageUrls;
-
-          status.textContent = 'Saving changes...';
-
-          const { error } = await db
-            .from('phones')
-            .update(payload)
-            .eq('id', editingId);
-
-          if (error) {
-            if (uploadedPaths.length)
-              await db.storage.from('phone-images').remove(uploadedPaths);
-            throw new Error('Update failed: ' + error.message);
-          }
-
-          // Remove replaced images only after the database update succeeds.
-          if (imageUrls && existing?.images?.length) {
-            const oldPaths = existing.images
-              .map(url => url.split('/phone-images/')[1])
-              .filter(Boolean);
-
-            if (oldPaths.length)
-              await db.storage.from('phone-images').remove(oldPaths);
-          }
-
-          cancelEdit();
-          $('status').textContent = '✓ Changes saved — Store synced.';
-        } else {
-          payload.images = imageUrls;
-
-          status.textContent = 'Publishing listing...';
-
-          const { error } = await db
-            .from('phones')
-            .insert(payload);
-
-          if (error) {
-            if (uploadedPaths.length)
-              await db.storage.from('phone-images').remove(uploadedPaths);
-            throw new Error('Database insert failed: ' + error.message);
-          }
-
-          form.reset();
-          status.textContent = '✓ Published — Store synced.';
-        }
-
-        await refreshListings();
-
-      } catch (err) {
-        console.error('ADMIN OPERATION ERROR:', err);
-        status.textContent = err.message || 'Operation failed.';
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-
-    async function removePhone(id) {
-      if (!confirm('Delete this listing?')) return;
-
-      const { data: phone, error: findError } = await db
-        .from('phones')
-        .select('images')
-        .eq('id', id)
-        .single();
-
-      if (findError) {
-        alert(findError.message);
-        return;
-      }
-
-      const { error } = await db
-        .from('phones')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      const paths = (phone.images || [])
-        .map(url => url.split('/phone-images/')[1])
-        .filter(Boolean);
-
-      if (paths.length)
-        await db.storage.from('phone-images').remove(paths);
-
-      await refreshListings();
-    }
-
-    async function deleteAll() {
-      if (!confirm('Delete ALL listings?')) return;
-
-      const { data: rows, error: findError } = await db
-        .from('phones')
-        .select('id,images');
-
-      if (findError) {
-        alert(findError.message);
-        return;
-      }
-
-      if (!rows?.length) {
-        await refreshListings();
-        return;
-      }
-
-      const { error } = await db
-        .from('phones')
-        .delete()
-        .in('id', rows.map(x => x.id));
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      const paths = rows
-        .flatMap(x => x.images || [])
-        .map(url => url.split('/phone-images/')[1])
-        .filter(Boolean);
-
-      if (paths.length)
-        await db.storage.from('phone-images').remove(paths);
-
-      await refreshListings();
-    }
-
-    // If Supabase Realtime is enabled, Admin also refreshes automatically.
-    db.channel('admin-phones-live')
-      .on('postgres_changes',
-        {event:'*', schema:'public', table:'phones'},
-        () => refreshListings())
-      .subscribe();
-
-    refreshListings();
-  </script>
+  <script src="admin.js?v=20260905-secure-final"></script>
 </body>
 </html>
