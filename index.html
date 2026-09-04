@@ -32,7 +32,10 @@
         <p style="margin-top:14px;">🤝 <strong>Meetup only:</strong> Cash, GCash, or Bank Transfer.</p>
       </div>
       <div class="hero-phone">
-        <div class="phone"><div class="camera"></div><div class="camera c2"></div><div class="camera c3"></div><div class="screen"></div></div>
+        <div class="phone">
+          <div class="camera"></div><div class="camera c2"></div><div class="camera c3"></div>
+          <div class="screen"></div>
+        </div>
       </div>
     </section>
 
@@ -42,9 +45,11 @@
           <p class="eyebrow">AVAILABLE NOW</p>
           <h2>Latest iPhones</h2>
         </div>
-        <input id="search" class="search" placeholder="Search iPhone..." oninput="renderProducts()">
+        <input id="search" class="search" placeholder="Search iPhone..." autocomplete="off">
       </div>
-      <div class="products" id="products"></div>
+      <div class="products" id="products">
+        <div class="empty">Loading iPhones...</div>
+      </div>
     </section>
 
     <section class="deal" id="deals">
@@ -54,7 +59,7 @@
         <p>Click an iPhone above to see the seller contact details and arrange a meetup.</p>
         <p><strong>Payment:</strong> Cash • GCash • Bank Transfer</p>
       </div>
-      <a class="primary-btn" href="https://www.facebook.com/armanstephent" target="_blank" rel="noopener">Contact on Facebook</a>
+      <a class="primary-btn" href="https://www.facebook.com/armanstephent" target="_blank" rel="noopener noreferrer">Contact on Facebook</a>
     </section>
   </main>
 
