@@ -13,7 +13,7 @@ nav{display:flex;align-items:center;gap:24px}nav a{color:#9eabc2;text-decoration
 h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{background:linear-gradient(90deg,#4c8cff,#9361ff);-webkit-background-clip:text;color:transparent}
 .hero-text{max-width:470px;color:#95a2bb;line-height:1.7;margin-bottom:28px}
 .primary-btn{display:inline-block;border:0;border-radius:9px;padding:12px 22px;background:linear-gradient(100deg,#3f83ff,#8857f2);color:white;font-weight:700;text-decoration:none;cursor:pointer;box-shadow:0 10px 30px rgba(78,91,255,.18)}
-.hero-phone{width:330px;height:330px;display:grid;place-items:center}
+.hero-phone{width:350px;height:350px;display:grid;place-items:center}
 .phone{width:150px;height:280px;border-radius:30px;background:linear-gradient(145deg,#263149,#111a2c);border:6px solid #34425e;box-shadow:0 35px 70px rgba(0,0,0,.45),0 0 70px rgba(94,93,255,.22);position:relative;transform:rotate(9deg)}
 .screen{position:absolute;inset:8px;border-radius:23px;background:radial-gradient(circle at 50% 30%,#637dff,#151d39 65%);display:grid;place-items:center;font-size:46px;color:white}
 .camera{position:absolute;z-index:3;width:25px;height:25px;border-radius:50%;background:#080c14;border:4px solid #303b51;left:15px;top:17px}.c2{left:43px}.c3{left:29px;top:45px}
