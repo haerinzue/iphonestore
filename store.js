@@ -1,18 +1,15 @@
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
 
-// Guard: if the Supabase library failed to load, show a visible error
-// instead of failing silently with a blank product list.
 if (!window.supabase) {
     document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById('products');
         if (el) {
             el.innerHTML =
-                '<div class="empty">Failed to load required library. ' +
-                'Check your internet connection or ad-blocker, then reload.</div>';
+                '<div class="empty">Could not load the store database. Please refresh the page.</div>';
         }
     });
-    throw new Error('Supabase JS library not loaded — aborting store.js setup.');
+    throw new Error('Supabase JS library not loaded.');
 }
 
 const supabase = window.supabase.createClient(
@@ -20,9 +17,25 @@ const supabase = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+window.allPhones = [];
+
+function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[m]));
+}
+
 async function loadPhones() {
-    const q = (document.getElementById('search').value || '').toLowerCase();
     const productsEl = document.getElementById('products');
+    const searchEl = document.getElementById('search');
+
+    if (!productsEl) return;
+
+    const q = (searchEl?.value || '').toLowerCase().trim();
 
     const { data: phones, error } = await supabase
         .from('phones')
@@ -30,62 +43,81 @@ async function loadPhones() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('SELECT ERROR:', error);
+        console.error('STORE SELECT ERROR:', error);
         productsEl.innerHTML =
-            '<div class="empty">Could not load listings. Please try again later.</div>';
+            '<div class="empty">Could not load listings. Please refresh.</div>';
         return;
     }
 
     window.allPhones = phones || [];
 
     const list = window.allPhones.filter(p =>
-        (p.name + ' ' + p.storage + ' ' + p.color + ' ' + p.condition)
-            .toLowerCase()
-            .includes(q)
+        [
+            p.name,
+            p.storage,
+            p.color,
+            p.condition,
+            p.battery,
+            p.description
+        ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
     );
 
     productsEl.innerHTML = list.length
-        ? list.map(p => `
-            <article class="product" onclick="showProduct('${p.id}')">
+        ? list.map(p => {
+            const images = Array.isArray(p.images)
+                ? p.images.filter(Boolean)
+                : [];
 
-                <div class="photo">
-                    ${
-                        p.images && p.images[0]
-                            ? `<img src="${esc(p.images[0])}" alt="${esc(p.name)}">`
-                            : `<div class="placeholder"></div>`
-                    }
-                </div>
+            return `
+                <article class="product" onclick="showProduct('${esc(p.id)}')">
 
-                <h3>${esc(p.name)}</h3>
+                    <div class="photo">
+                        ${
+                            images[0]
+                                ? `<img src="${esc(images[0])}" alt="${esc(p.name)}">`
+                                : `<div class="placeholder"></div>`
+                        }
+                    </div>
 
-                <div class="meta">
-                    ${esc(p.storage || '')}
-                    ${p.color ? ' • ' + esc(p.color) : ''}
-                    <br>
-                    Condition: ${esc(p.condition || 'Not specified')}
-                    <br>
-                    Battery Health: ${esc(p.battery || 'Not specified')}
-                </div>
+                    <h3>${esc(p.name)}</h3>
 
-                <div class="price">
-                    ₱${Number(p.price || 0).toLocaleString('en-PH')}
-                </div>
+                    <div class="meta">
+                        ${esc(p.storage || '')}
+                        ${p.color ? ' • ' + esc(p.color) : ''}
+                        <br>
+                        Condition: ${esc(p.condition || 'Not specified')}
+                        <br>
+                        Battery Health: ${esc(p.battery || 'Not specified')}
+                    </div>
 
-                <div class="view-details">
-                    View Details →
-                </div>
+                    <div class="price">
+                        ₱${Number(p.price || 0).toLocaleString('en-PH')}
+                    </div>
 
-            </article>
-        `).join('')
+                    <div class="view-details">
+                        ${images.length > 1
+                            ? `View ${images.length} Photos →`
+                            : 'View Details →'}
+                    </div>
+
+                </article>
+            `;
+        }).join('')
         : '<div class="empty">No iPhones found.</div>';
 }
-
 
 let currentGalleryIndex = 0;
 let currentGalleryImages = [];
 
 function showProduct(id) {
-    const phone = window.allPhones.find(p => String(p.id) === String(id));
+    const phone = window.allPhones.find(
+        p => String(p.id) === String(id)
+    );
+
     if (!phone) return;
 
     currentGalleryImages = Array.isArray(phone.images)
@@ -99,19 +131,23 @@ function showProduct(id) {
     if (!details) {
         details = document.createElement('section');
         details.id = 'product-details';
-        document.getElementById('iphones').appendChild(details);
+
+        const section = document.getElementById('iphones');
+        if (section) section.appendChild(details);
     }
 
     const gallery = currentGalleryImages.length
         ? `
             <div class="details-gallery">
+
                 <div class="gallery-main">
+
                     <button
                         class="gallery-arrow gallery-prev"
                         type="button"
-                        aria-label="Previous image"
                         onclick="changeGallery(-1, event)"
-                        ${currentGalleryImages.length <= 1 ? 'style="display:none"' : ''}
+                        aria-label="Previous image"
+                        ${currentGalleryImages.length <= 1 ? 'hidden' : ''}
                     >‹</button>
 
                     <img
@@ -123,34 +159,41 @@ function showProduct(id) {
                     <button
                         class="gallery-arrow gallery-next"
                         type="button"
-                        aria-label="Next image"
                         onclick="changeGallery(1, event)"
-                        ${currentGalleryImages.length <= 1 ? 'style="display:none"' : ''}
+                        aria-label="Next image"
+                        ${currentGalleryImages.length <= 1 ? 'hidden' : ''}
                     >›</button>
+
                 </div>
 
                 ${
                     currentGalleryImages.length > 1
-                    ? `
-                        <div class="gallery-counter">
-                            <span id="galleryCounter">1</span> / ${currentGalleryImages.length}
-                        </div>
+                        ? `
+                            <div class="gallery-counter">
+                                <span id="galleryCounter">1</span>
+                                /
+                                ${currentGalleryImages.length}
+                            </div>
 
-                        <div class="gallery-thumbs">
-                            ${currentGalleryImages.map((url, index) => `
-                                <button
-                                    type="button"
-                                    class="gallery-thumb ${index === 0 ? 'active' : ''}"
-                                    onclick="selectGalleryImage(${index}, event)"
-                                    aria-label="View image ${index + 1}"
-                                >
-                                    <img src="${esc(url)}" alt="${esc(phone.name)} image ${index + 1}">
-                                </button>
-                            `).join('')}
-                        </div>
-                    `
-                    : ''
+                            <div class="gallery-thumbs">
+                                ${currentGalleryImages.map((url, index) => `
+                                    <button
+                                        class="gallery-thumb ${index === 0 ? 'active' : ''}"
+                                        type="button"
+                                        onclick="selectGalleryImage(${index}, event)"
+                                        aria-label="View image ${index + 1}"
+                                    >
+                                        <img
+                                            src="${esc(url)}"
+                                            alt="${esc(phone.name)} image ${index + 1}"
+                                        >
+                                    </button>
+                                `).join('')}
+                            </div>
+                        `
+                        : ''
                 }
+
             </div>
         `
         : `<div class="details-image"><div class="placeholder"></div></div>`;
@@ -158,7 +201,12 @@ function showProduct(id) {
     details.innerHTML = `
         <div class="details-card">
 
-            <button class="close-details" onclick="closeProduct(event)">
+            <button
+                class="close-details"
+                type="button"
+                onclick="closeProduct(event)"
+                aria-label="Close"
+            >
                 ×
             </button>
 
@@ -213,7 +261,9 @@ function showProduct(id) {
 
                     <h3>Interested in this iPhone?</h3>
 
-                    <p>Contact us directly to arrange a meet-up.</p>
+                    <p>
+                        Contact us directly to arrange a meet-up.
+                    </p>
 
                     <div class="contact-item">
                         📘
@@ -299,51 +349,79 @@ function updateGallery() {
     }
 
     if (counter) {
-        counter.textContent = String(currentGalleryIndex + 1);
+        counter.textContent =
+            String(currentGalleryIndex + 1);
     }
 
-    document.querySelectorAll('.gallery-thumb').forEach((thumb, index) => {
-        thumb.classList.toggle(
-            'active',
-            index === currentGalleryIndex
-        );
-    });
+    document.querySelectorAll('.gallery-thumb')
+        .forEach((thumb, index) => {
+            thumb.classList.toggle(
+                'active',
+                index === currentGalleryIndex
+            );
+        });
 }
 
 function closeProduct(event) {
-
-    event.stopPropagation();
+    if (event) event.stopPropagation();
 
     const details = document.getElementById('product-details');
 
     if (details) {
         details.remove();
     }
+
+    currentGalleryImages = [];
+    currentGalleryIndex = 0;
 }
 
-
-function esc(s) {
-    return String(s ?? '').replace(
-        /[&<>"']/g,
-        m => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        }[m])
-    );
+function renderProducts() {
+    loadPhones();
 }
 
+function contactSeller() {
+    const modal = document.getElementById('contactModal');
 
-// Keep the Store synchronized with Admin/Supabase changes.
+    if (modal) {
+        modal.hidden = false;
+    }
+}
+
+function openContactModal() {
+    contactSeller();
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contactModal');
+
+    if (modal) {
+        modal.hidden = true;
+    }
+}
+
+/* Live synchronization with Admin/Supabase */
 supabase
-    .channel('phones-live')
+    .channel('mgh-phones-live')
     .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'phones' },
+        {
+            event: '*',
+            schema: 'public',
+            table: 'phones'
+        },
         () => loadPhones()
     )
     .subscribe();
+
+document.addEventListener('click', event => {
+    const modal = document.getElementById('contactModal');
+
+    if (
+        modal &&
+        event.target === modal
+    ) {
+        modal.hidden = true;
+    }
+});
 
 loadPhones();
