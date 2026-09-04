@@ -30,3 +30,120 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 .cart-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #2c3850;color:#c9d1df}.cart-total{padding:20px 0;font-size:17px}.full{width:100%;text-align:center}
 @media(max-width:800px){nav a{display:none}.hero{padding-top:25px;min-height:auto}.hero-phone{display:none}h1{font-size:48px}.products{grid-template-columns:repeat(2,1fr)}.section-heading,.deal{align-items:flex-start;gap:20px;flex-direction:column}}
 @media(max-width:480px){.products{grid-template-columns:1fr}.navbar{padding:20px}.section,.hero{padding-left:20px;padding-right:20px}.search{width:100%}}
+
+/* =========================================================
+   PRODUCT DETAIL IMAGE GALLERY FIX
+   - Never crops the uploaded product photo
+   - Shows all uploaded images with thumbnails
+   - Keeps the main image at a comfortable size
+   ========================================================= */
+
+.details-gallery {
+    width: 100%;
+}
+
+.gallery-main {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    min-height: 280px;
+    max-height: 430px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #101a2d;
+    border: 1px solid #2f3d57;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-main > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+    object-position: center;
+    display: block;
+    background: #101a2d;
+}
+
+.gallery-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 50%;
+    background: rgba(13,21,40,.78);
+    color: #fff;
+    font-size: 30px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.gallery-arrow:hover {
+    background: rgba(63,131,255,.9);
+}
+
+.gallery-prev {
+    left: 12px;
+}
+
+.gallery-next {
+    right: 12px;
+}
+
+.gallery-counter {
+    text-align: center;
+    color: #9aa8bf;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.gallery-thumbs {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 10px 2px 3px;
+}
+
+.gallery-thumb {
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #101a2d;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.gallery-thumb.active {
+    border-color: #5b63f6;
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 700px) {
+    .gallery-main {
+        aspect-ratio: 4 / 3;
+        min-height: 220px;
+        max-height: none;
+    }
+
+    .gallery-thumb {
+        flex-basis: 58px;
+        width: 58px;
+        height: 58px;
+    }
+}
