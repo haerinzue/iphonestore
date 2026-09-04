@@ -2,13 +2,13 @@ js
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
 
-const supabase = window.supabase.createClient(
+const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
 async function refresh() {
-    const { data: phones, error } = await supabase
+    const { data: phones, error } = await db
         .from('phones')
         .select('*')
         .order('created_at', { ascending: false });
@@ -123,7 +123,7 @@ document.getElementById('phoneForm').addEventListener(
                 );
 
                 const { error: uploadError } =
-                    await supabase.storage
+                    await db.storage
                         .from('phone-images')
                         .upload(fileName, file, {
                             contentType: file.type,
@@ -148,7 +148,7 @@ document.getElementById('phoneForm').addEventListener(
                 );
 
                 const { data } =
-                    supabase.storage
+                    db.storage
                         .from('phone-images')
                         .getPublicUrl(fileName);
 
@@ -169,7 +169,7 @@ document.getElementById('phoneForm').addEventListener(
             );
 
             const { error: insertError } =
-                await supabase
+                await db
                     .from('phones')
                     .insert({
                         name: formData.get('name'),
@@ -224,7 +224,7 @@ async function removePhone(id) {
     }
 
     const { data: phone, error: findError } =
-        await supabase
+        await db
             .from('phones')
             .select('images')
             .eq('id', id)
@@ -236,7 +236,7 @@ async function removePhone(id) {
     }
 
     const { error } =
-        await supabase
+        await db
             .from('phones')
             .delete()
             .eq('id', id);
@@ -254,7 +254,7 @@ async function removePhone(id) {
 
         if (paths.length) {
 
-            await supabase.storage
+            await db.storage
                 .from('phone-images')
                 .remove(paths);
 
@@ -267,12 +267,12 @@ async function removePhone(id) {
 
 async function deleteAll() {
 
-    if (!confirm('Delete ALL listings?')) {
+    if (!confirm('Delete ALL listings.')) {
         return;
     }
 
     const { data: phones, error: findError } =
-        await supabase
+        await db
             .from('phones')
             .select('id, images');
 
@@ -282,7 +282,7 @@ async function deleteAll() {
     }
 
     const { error } =
-        await supabase
+        await db
             .from('phones')
             .delete()
             .neq('id', 0);
@@ -299,7 +299,7 @@ async function deleteAll() {
 
     if (paths.length) {
 
-        await supabase.storage
+        await db.storage
             .from('phone-images')
             .remove(paths);
 
@@ -325,3 +325,4 @@ function esc(s) {
 }
 
 refresh();
+
