@@ -7,9 +7,7 @@ const supabase = window.supabase.createClient(
     SUPABASE_KEY
 );
 
-
 async function refresh() {
-
     const { data: phones, error } = await supabase
         .from('phones')
         .select('*')
@@ -20,7 +18,9 @@ async function refresh() {
     if (error) {
         console.error(error);
         el.innerHTML =
-            '<p style="color:#ff6b6b">Failed to load listings.</p>';
+            '<p style="color:#ff6b6b">Failed to load listings: ' +
+            esc(error.message) +
+            '</p>';
         return;
     }
 
@@ -35,7 +35,6 @@ async function refresh() {
                 >
 
                 <div class="item-info">
-
                     <strong>${esc(p.name)}</strong>
 
                     <div>
@@ -48,7 +47,6 @@ async function refresh() {
                     <div>
                         Battery: ${esc(p.battery || 'N/A')}
                     </div>
-
                 </div>
 
                 <button
@@ -74,24 +72,55 @@ document.getElementById('phoneForm').addEventListener(
         const form = e.target;
         const formData = new FormData(form);
 
-        status.textContent = 'Uploading...';
-
         try {
+
+            status.textContent = 'Checking image...';
 
             const files = form.querySelector(
                 'input[name="images"]'
             ).files;
 
             if (!files.length) {
-                throw new Error('Please select at least one image.');
+                throw new Error('No image selected.');
             }
+
+            console.log('Images selected:', files.length);
 
             const imageUrls = [];
 
-            for (const file of files) {
+            for (let i = 0; i < files.length; i++) {
+
+                const file = files[i];
+
+                status.textContent =
+                    `Uploading image ${i + 1} of ${files.length}...`;
+
+                console.log(
+                    'Starting upload:',
+                    file.name,
+                    file.type,
+                    file.size
+                );
+
+                if (!file.type.startsWith('image/')) {
+                    throw new Error(
+                        `${file.name} is not an image.`
+                    );
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    throw new Error(
+                        `${file.name} is larger than 10MB.`
+                    );
+                }
 
                 const fileName =
                     `${crypto.randomUUID()}-${file.name}`;
+
+                console.log(
+                    'Uploading to bucket:',
+                    'phone-images'
+                );
 
                 const { error: uploadError } =
                     await supabase.storage
@@ -102,17 +131,42 @@ document.getElementById('phoneForm').addEventListener(
                         });
 
                 if (uploadError) {
-                    throw uploadError;
+                    console.error(
+                        'STORAGE ERROR:',
+                        uploadError
+                    );
+
+                    throw new Error(
+                        'Storage upload failed: ' +
+                        uploadError.message
+                    );
                 }
+
+                console.log(
+                    'Upload successful:',
+                    fileName
+                );
 
                 const { data } =
                     supabase.storage
                         .from('phone-images')
                         .getPublicUrl(fileName);
 
+                if (!data?.publicUrl) {
+                    throw new Error(
+                        'Could not create public image URL.'
+                    );
+                }
+
                 imageUrls.push(data.publicUrl);
             }
 
+            status.textContent =
+                'Saving listing...';
+
+            console.log(
+                'Saving phone to database...'
+            );
 
             const { error: insertError } =
                 await supabase
@@ -129,11 +183,20 @@ document.getElementById('phoneForm').addEventListener(
                     });
 
             if (insertError) {
-                throw insertError;
+
+                console.error(
+                    'DATABASE ERROR:',
+                    insertError
+                );
+
+                throw new Error(
+                    'Database error: ' +
+                    insertError.message
+                );
             }
 
-
-            status.textContent = 'Published!';
+            status.textContent =
+                'Published successfully!';
 
             form.reset();
 
@@ -141,13 +204,15 @@ document.getElementById('phoneForm').addEventListener(
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                'FINAL ERROR:',
+                error
+            );
 
             status.textContent =
                 error.message || 'Upload failed.';
 
         }
-
     }
 );
 
@@ -157,7 +222,6 @@ async function removePhone(id) {
     if (!confirm('Delete this listing?')) {
         return;
     }
-
 
     const { data: phone, error: findError } =
         await supabase
@@ -171,7 +235,6 @@ async function removePhone(id) {
         return;
     }
 
-
     const { error } =
         await supabase
             .from('phones')
@@ -182,7 +245,6 @@ async function removePhone(id) {
         alert(error.message);
         return;
     }
-
 
     if (phone.images?.length) {
 
@@ -199,9 +261,7 @@ async function removePhone(id) {
         }
     }
 
-
     await refresh();
-
 }
 
 
@@ -210,7 +270,6 @@ async function deleteAll() {
     if (!confirm('Delete ALL listings?')) {
         return;
     }
-
 
     const { data: phones, error: findError } =
         await supabase
@@ -221,7 +280,6 @@ async function deleteAll() {
         alert(findError.message);
         return;
     }
-
 
     const { error } =
         await supabase
@@ -234,12 +292,10 @@ async function deleteAll() {
         return;
     }
 
-
     const paths = phones
         .flatMap(p => p.images || [])
         .map(url => url.split('/phone-images/')[1])
         .filter(Boolean);
-
 
     if (paths.length) {
 
@@ -249,9 +305,7 @@ async function deleteAll() {
 
     }
 
-
     await refresh();
-
 }
 
 
@@ -270,6 +324,4 @@ function esc(s) {
 
 }
 
-
 refresh();
-
