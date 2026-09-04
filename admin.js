@@ -1,311 +1,414 @@
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
 
-// Guard: if the Supabase library failed to load (blocked script, bad
-// CDN path, offline, etc.), window.supabase won't exist. Without this
-// check, everything below silently fails to run, the submit listener
-// never attaches, and the <form> falls back to a native GET submit
-// (which is why you'd see form fields show up in the URL bar).
+let db;
+
+document.addEventListener('DOMContentLoaded', () => {
 if (!window.supabase) {
-    document.addEventListener('DOMContentLoaded', () => {
-        const status = document.getElementById('status');
-        const list = document.getElementById('list');
-        const msg = 'Failed to load required library (Supabase JS). ' +
-            'Check your internet connection or ad-blocker, then reload the page.';
-        if (status) status.textContent = msg;
-        if (list) list.innerHTML =
-            '<p style="color:#ff6b6b">' + msg + '</p>';
-        // Still stop the form from doing a native GET submit.
-        const form = document.getElementById('phoneForm');
-        if (form) {
-            form.addEventListener('submit', e => {
-                e.preventDefault();
-                if (status) status.textContent = msg;
-            });
-        }
-    });
-    throw new Error('Supabase JS library not loaded — aborting admin.js setup.');
+console.error('Supabase library was not loaded.');
+return;
 }
 
-const supabase = window.supabase.createClient(
+
+db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
+setupForm();
+refresh();
+
+
+});
+
 async function refresh() {
-    const el = document.getElementById('list');
-    el.innerHTML = '<p style="color:#7f8da7">Loading...</p>';
+const el = document.getElementById('list');
 
-    const { data: phones, error } = await supabase
-        .from('phones')
-        .select('*')
-        .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('SELECT ERROR:', error);
-        el.innerHTML =
-            '<p style="color:#ff6b6b">Failed to load listings: ' +
-            esc(error.message) +
-            '</p>';
-        return;
-    }
+if (!el || !db) return;
 
-    console.log('Fetched phones:', phones);
+el.innerHTML = '<p style="color:#7f8da7">Loading listings...</p>';
 
-    if (!phones || phones.length === 0) {
-        el.innerHTML =
-            '<p style="color:#7f8da7">No listings yet. ' +
-            '(If you just added one and it\'s not showing, check ' +
-            'your Supabase RLS SELECT policy on the "phones" table.)</p>';
-        return;
-    }
+const { data: phones, error } = await db
+    .from('phones')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    el.innerHTML = phones.map(p => `
-        <div class="item">
-            <img
-                class="thumb"
-                src="${esc(p.images?.[0] || '')}"
-                alt="${esc(p.name)}"
-            >
-            <div class="item-info">
-                <strong>${esc(p.name)}</strong>
-                <div>
-                    ₱${Number(p.price || 0).toLocaleString('en-PH')}
-                    • ${esc(p.storage || '')}
-                    • ${esc(p.color || '')}
-                    • ${esc(p.condition || '')}
-                </div>
-                <div>
-                    Battery: ${esc(p.battery || 'N/A')}
-                </div>
-            </div>
-            <button
-                class="delete"
-                onclick="removePhone('${p.id}')"
-            >
-                Delete
-            </button>
-        </div>
-    `).join('');
+if (error) {
+    console.error('LOAD ERROR:', error);
+
+    el.innerHTML =
+        '<p style="color:#ff6b6b">Failed to load listings: ' +
+        esc(error.message) +
+        '</p>';
+
+    return;
 }
 
-document.getElementById('phoneForm').addEventListener(
-    'submit',
-    async e => {
-        e.preventDefault();
+if (!phones || phones.length === 0) {
+    el.innerHTML =
+        '<p style="color:#7f8da7">No listings yet.</p>';
+    return;
+}
 
-        const status = document.getElementById('status');
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const formData = new FormData(form);
+el.innerHTML = phones.map(phone => `
+    <div class="item">
 
-        if (submitBtn) submitBtn.disabled = true;
+        <img
+            class="thumb"
+            src="${esc(phone.images?.[0] || '')}"
+            alt="${esc(phone.name)}"
+        >
 
-        try {
-            status.textContent = 'Checking image...';
+        <div class="item-info">
+            <strong>${esc(phone.name)}</strong>
 
-            const files = form.querySelector('input[name="images"]').files;
+            <div>
+                ₱${Number(phone.price || 0).toLocaleString('en-PH')}
+                • ${esc(phone.storage || '')}
+                • ${esc(phone.color || '')}
+                • ${esc(phone.condition || '')}
+            </div>
 
-            if (!files.length) {
-                throw new Error('Please select at least one image.');
+            <div>
+                Battery: ${esc(phone.battery || 'N/A')}
+            </div>
+        </div>
+
+        <button
+            class="delete"
+            onclick="removePhone('${esc(phone.id)}')"
+        >
+            Delete
+        </button>
+
+    </div>
+`).join('');
+
+
+}
+
+function setupForm() {
+const form = document.getElementById('phoneForm');
+
+
+if (!form) {
+    console.error('phoneForm was not found.');
+    return;
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const status = document.getElementById('status');
+    const fileInput = form.querySelector('input[name="images"]');
+
+    try {
+        status.textContent = 'Checking images...';
+
+        if (!fileInput || !fileInput.files.length) {
+            throw new Error('Please select at least one image.');
+        }
+
+        const files = Array.from(fileInput.files);
+
+        console.log('Images selected:', files.length);
+
+        const imageUrls = [];
+
+        // Upload every image
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            status.textContent =
+                `Uploading image ${i + 1} of ${files.length}...`;
+
+            if (!file.type.startsWith('image/')) {
+                throw new Error(
+                    `${file.name} is not an image.`
+                );
             }
 
-            const imageUrls = [];
-            const uploadedPaths = [];
+            if (file.size > 10 * 1024 * 1024) {
+                throw new Error(
+                    `${file.name} is larger than 10MB.`
+                );
+            }
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            const safeName = file.name
+                .replace(/[^a-zA-Z0-9._-]/g, '_');
 
-                status.textContent =
-                    `Uploading image ${i + 1} of ${files.length}...`;
+            const fileName =
+                `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
 
-                if (!file.type.startsWith('image/')) {
-                    throw new Error(`${file.name} is not an image.`);
-                }
+            console.log('Uploading:', fileName);
 
-                if (file.size > 10 * 1024 * 1024) {
-                    throw new Error(`${file.name} is larger than 10MB.`);
-                }
-
-                const fileName = `${crypto.randomUUID()}-${file.name}`;
-
-                const { error: uploadError } = await supabase.storage
+            const { error: uploadError } =
+                await db.storage
                     .from('phone-images')
                     .upload(fileName, file, {
                         contentType: file.type,
                         upsert: false
                     });
 
-                if (uploadError) {
-                    console.error('STORAGE ERROR:', uploadError);
-                    throw new Error('Storage upload failed: ' + uploadError.message);
-                }
+            if (uploadError) {
+                console.error(
+                    'STORAGE ERROR:',
+                    uploadError
+                );
 
-                uploadedPaths.push(fileName);
+                throw new Error(
+                    'Image upload failed: ' +
+                    uploadError.message
+                );
+            }
 
-                const { data } = supabase.storage
+            const { data: publicData } =
+                db.storage
                     .from('phone-images')
                     .getPublicUrl(fileName);
 
-                if (!data?.publicUrl) {
-                    throw new Error('Could not create public image URL.');
-                }
-
-                imageUrls.push(data.publicUrl);
+            if (!publicData || !publicData.publicUrl) {
+                throw new Error(
+                    'Could not create image URL.'
+                );
             }
 
-            status.textContent = 'Saving listing...';
+            imageUrls.push(publicData.publicUrl);
 
-            const { data: inserted, error: insertError } = await supabase
-                .from('phones')
-                .insert({
-                    name: formData.get('name'),
-                    price: Number(formData.get('price')),
-                    storage: formData.get('storage'),
-                    color: formData.get('color'),
-                    condition: formData.get('condition'),
-                    battery: formData.get('battery'),
-                    description: formData.get('description'),
-                    images: imageUrls
-                })
-                .select();
-
-            if (insertError) {
-                console.error('DATABASE ERROR:', insertError);
-
-                if (uploadedPaths.length) {
-                    await supabase.storage.from('phone-images').remove(uploadedPaths);
-                }
-
-                throw new Error('Database error: ' + insertError.message);
-            }
-
-            if (!inserted || inserted.length === 0) {
-                status.textContent =
-                    'Saved, but could not confirm it back (check RLS SELECT policy).';
-            } else {
-                status.textContent = 'Published!';
-            }
-
-            form.reset();
-            await refresh();
-
-        } catch (error) {
-            console.error('FINAL ERROR:', error);
-            status.textContent = error.message || 'Upload failed.';
-        } finally {
-            if (submitBtn) submitBtn.disabled = false;
+            console.log(
+                'Image uploaded:',
+                publicData.publicUrl
+            );
         }
-    }
-);
 
-async function removePhone(id) {
-    if (!confirm('Delete this listing?')) {
-        return;
-    }
+        // Save phone
+        status.textContent = 'Saving phone listing...';
 
-    const { data: phone, error: findError } = await supabase
+        const formData = new FormData(form);
+
+        const phone = {
+            name: String(formData.get('name') || '').trim(),
+            price: Number(formData.get('price') || 0),
+            storage: String(formData.get('storage') || '').trim(),
+            color: String(formData.get('color') || '').trim(),
+            condition: String(formData.get('condition') || '').trim(),
+            battery: String(formData.get('battery') || '').trim(),
+            description: String(
+                formData.get('description') || ''
+            ).trim(),
+            images: imageUrls
+        };
+
+        if (!phone.name) {
+            throw new Error('Phone name is required.');
+        }
+
+        if (!phone.price || phone.price < 0) {
+            throw new Error('Please enter a valid price.');
+        }
+
+        console.log('Saving phone:', phone);
+
+        const { data, error: insertError } =
+            await db
+                .from('phones')
+                .insert(phone)
+                .select()
+                .single();
+
+        if (insertError) {
+            console.error(
+                'DATABASE ERROR:',
+                insertError
+            );
+
+            throw new Error(
+                'Database error: ' +
+                insertError.message
+            );
+        }
+
+        console.log(
+            'Phone successfully saved:',
+            data
+        );
+
+        status.textContent =
+            'Published successfully!';
+
+        form.reset();
+
+        await refresh();
+
+    } catch (error) {
+        console.error(
+            'UPLOAD/PUBLISH ERROR:',
+            error
+        );
+
+        status.textContent =
+            error.message || 'Upload failed.';
+    }
+});
+
+
+}
+
+// Delete one phone
+window.removePhone = async function (id) {
+if (!db) return;
+
+
+if (!confirm('Delete this listing?')) {
+    return;
+}
+
+const { data: phone, error: findError } =
+    await db
         .from('phones')
         .select('images')
         .eq('id', id)
         .single();
 
-    if (findError) {
-        alert(findError.message);
-        return;
-    }
+if (findError) {
+    alert(
+        'Could not find listing: ' +
+        findError.message
+    );
+    return;
+}
 
-    const { error } = await supabase
+const { error: deleteError } =
+    await db
         .from('phones')
         .delete()
         .eq('id', id);
 
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    if (phone.images?.length) {
-        const paths = phone.images
-            .map(url => url.split('/phone-images/')[1])
-            .filter(Boolean);
-
-        if (paths.length) {
-            const { error: removeError } = await supabase.storage
-                .from('phone-images')
-                .remove(paths);
-
-            if (removeError) {
-                console.error('STORAGE CLEANUP ERROR:', removeError);
-            }
-        }
-    }
-
-    await refresh();
+if (deleteError) {
+    alert(
+        'Could not delete listing: ' +
+        deleteError.message
+    );
+    return;
 }
 
-async function deleteAll() {
-    if (!confirm('Delete ALL listings?')) {
-        return;
-    }
+// Delete associated images
+if (phone?.images?.length) {
+    const paths = phone.images
+        .map(url => {
+            const marker = '/phone-images/';
+            const index = url.indexOf(marker);
 
-    const { data: phones, error: findError } = await supabase
-        .from('phones')
-        .select('id, images');
+            if (index === -1) return null;
 
-    if (findError) {
-        alert(findError.message);
-        return;
-    }
-
-    if (!phones || phones.length === 0) {
-        await refresh();
-        return;
-    }
-
-    // Fixed: `.neq('id', 0)` assumed an integer id column. Supabase
-    // ids here are uuids, so delete by the actual id list instead.
-    const ids = phones.map(p => p.id);
-
-    const { error } = await supabase
-        .from('phones')
-        .delete()
-        .in('id', ids);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    const paths = phones
-        .flatMap(p => p.images || [])
-        .map(url => url.split('/phone-images/')[1])
+            return decodeURIComponent(
+                url.substring(index + marker.length)
+            );
+        })
         .filter(Boolean);
 
     if (paths.length) {
-        const { error: removeError } = await supabase.storage
+        const { error: storageError } =
+            await db.storage
+                .from('phone-images')
+                .remove(paths);
+
+        if (storageError) {
+            console.warn(
+                'Could not delete images:',
+                storageError
+            );
+        }
+    }
+}
+
+await refresh();
+
+
+};
+
+// Delete all phones
+window.deleteAll = async function () {
+if (!db) return;
+
+
+if (!confirm('Delete ALL listings?')) {
+    return;
+}
+
+const { data: phones, error: findError } =
+    await db
+        .from('phones')
+        .select('id, images');
+
+if (findError) {
+    alert(
+        'Could not load listings: ' +
+        findError.message
+    );
+    return;
+}
+
+const { error: deleteError } =
+    await db
+        .from('phones')
+        .delete()
+        .neq('id', 0);
+
+if (deleteError) {
+    alert(
+        'Could not delete listings: ' +
+        deleteError.message
+    );
+    return;
+}
+
+const paths = (phones || [])
+    .flatMap(phone => phone.images || [])
+    .map(url => {
+        const marker = '/phone-images/';
+        const index = url.indexOf(marker);
+
+        if (index === -1) return null;
+
+        return decodeURIComponent(
+            url.substring(index + marker.length)
+        );
+    })
+    .filter(Boolean);
+
+if (paths.length) {
+    const { error: storageError } =
+        await db.storage
             .from('phone-images')
             .remove(paths);
 
-        if (removeError) {
-            console.error('STORAGE CLEANUP ERROR:', removeError);
-        }
+    if (storageError) {
+        console.warn(
+            'Could not delete some images:',
+            storageError
+        );
     }
-
-    await refresh();
 }
 
-function esc(s) {
-    return String(s ?? '').replace(
-        /[&<>"']/g,
-        m => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        }[m])
-    );
+await refresh();
+
+
+};
+
+function esc(value) {
+return String(value ?? '').replace(
+/[&<>"']/g,
+char => ({
+'&': '&',
+'<': '<',
+'>': '>',
+'"': '"',
+"'": '''
+}[char])
+);
 }
 
-refresh();
+// Make refresh available globally for debugging
+window.refresh = refresh;
