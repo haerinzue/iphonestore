@@ -61,10 +61,10 @@ function showProduct(id){
       </div>
     </div>
   </div>`;
-  modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+  modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open');
 }
 function row(label,value){return `<div class="detail-row"><span>${esc(label)}</span><strong>${esc(value || 'Not specified')}</strong></div>`;}
-function closeProduct(){const m=$('detailsModal');m.classList.remove('open');m.setAttribute('aria-hidden','true');activePhone=null;}
+function closeProduct(){const m=$('detailsModal');m.classList.remove('open');m.setAttribute('aria-hidden','true');activePhone=null; if(!$('contactModal')?.classList.contains('open')) document.body.classList.remove('modal-open');}
 function updateGallery(){
   if(!activePhone) return; const imgs=imagesOf(activePhone); if(!imgs.length) return;
   const image=$('galleryImage'); if(image) image.src=imgs[galleryIndex];
@@ -73,8 +73,8 @@ function updateGallery(){
 }
 function changeGallery(delta){const imgs=imagesOf(activePhone); if(!imgs.length)return; galleryIndex=(galleryIndex+delta+imgs.length)%imgs.length;updateGallery();}
 function selectGalleryImage(i){galleryIndex=i;updateGallery();}
-function contactSeller(){ $('contactModal').classList.add('open'); $('contactModal').setAttribute('aria-hidden','false'); }
-function closeContact(){ $('contactModal').classList.remove('open'); $('contactModal').setAttribute('aria-hidden','true'); }
+function contactSeller(){ $('contactModal').classList.add('open'); $('contactModal').setAttribute('aria-hidden','false'); document.body.classList.add('modal-open'); }
+function closeContact(){ $('contactModal').classList.remove('open'); $('contactModal').setAttribute('aria-hidden','true'); if(!$('detailsModal')?.classList.contains('open')) document.body.classList.remove('modal-open'); }
 
 $('search')?.addEventListener('input', renderProducts);
 $('detailsModal')?.addEventListener('click', e => { if(e.target.id === 'detailsModal') closeProduct(); });
