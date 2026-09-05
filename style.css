@@ -33,10 +33,8 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 
 
 /* =========================================================
-   PRODUCT DETAIL IMAGE GALLERY FIX
-   - Never crops the uploaded product photo
-   - Shows all uploaded images with thumbnails
-   - Main gallery stretches with the product details
+   PRODUCT DETAIL IMAGE GALLERY
+   ONLY CHANGE: MAKE GALLERY FILL THE DETAIL CARD HEIGHT
    ========================================================= */
 
 .detail-layout {
@@ -45,8 +43,9 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 
 .details-gallery {
     width: 100%;
-    height: 100%;
-    min-height: 100%;
+    height: 100% !important;
+    min-height: 100% !important;
+    align-self: stretch !important;
     display: flex;
     flex-direction: column;
 }
@@ -54,10 +53,10 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 .gallery-main {
     position: relative;
     width: 100%;
-    flex: 1 1 auto !important;
-    height: auto !important;
-    min-height: 520px;
+    height: 620px !important;
+    min-height: 620px !important;
     max-height: none !important;
+    aspect-ratio: auto !important;
     overflow: hidden;
     border-radius: 14px;
     background: #101a2d;
@@ -145,13 +144,17 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 }
 
 @media (max-width: 700px) {
+    .details-gallery {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
     .gallery-main {
-        flex: none !important;
         width: 100%;
         height: auto !important;
-        min-height: 220px;
+        min-height: 220px !important;
         max-height: 55vh !important;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 4 / 3 !important;
     }
 
     .gallery-main > img {
