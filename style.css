@@ -156,46 +156,65 @@ h1{font-size:64px;line-height:1.02;margin:0 0 20px;letter-spacing:-3px}h1 span{b
 }
 
 /* =========================================================
-   PRODUCT DETAIL GALLERY HEIGHT FIX
-   ONLY THIS SECTION IS NEW
+   PRODUCT DETAIL GALLERY FINAL FIX
+   Only changes the product-detail gallery:
+   - removes the large empty area below thumbnails
+   - removes the side letterboxing around portrait photos
    ========================================================= */
 
-.details-card {
+#product-details .details-card {
     align-items: stretch !important;
 }
 
-.details-card > .details-gallery {
+#product-details .details-gallery {
+    width: 100% !important;
     height: 100% !important;
-    min-height: 100% !important;
+    min-height: 0 !important;
     align-self: stretch !important;
     display: flex !important;
     flex-direction: column !important;
 }
 
-.details-card > .details-gallery .gallery-main {
-    flex: 1 1 auto !important;
+#product-details .details-gallery .gallery-main {
     width: 100% !important;
+    flex: 1 1 auto !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: auto !important;
+    overflow: hidden !important;
 }
 
-.details-card > .details-gallery .gallery-thumbs {
+#product-details .details-gallery .gallery-main > img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+}
+
+#product-details .details-gallery .gallery-thumbs {
     flex: 0 0 auto !important;
+    width: 100% !important;
+    margin-top: 0 !important;
 }
 
+/* Keep the mobile layout usable */
 @media (max-width: 700px) {
-    .details-card > .details-gallery {
+    #product-details .details-gallery {
         height: auto !important;
         min-height: 0 !important;
     }
 
-    .details-card > .details-gallery .gallery-main {
+    #product-details .details-gallery .gallery-main {
         flex: none !important;
         height: auto !important;
         min-height: 220px !important;
         max-height: 55vh !important;
         aspect-ratio: 4 / 3 !important;
+    }
+
+    #product-details .details-gallery .gallery-main > img {
+        object-fit: cover !important;
     }
 }
