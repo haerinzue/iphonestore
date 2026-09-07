@@ -454,7 +454,8 @@
 
     .detail-price {
       font-size: 25px;
-      font-weight: 900;
+      font-weight: 700;
+      letter-spacing: -0.2px;
       margin: 10px 0 20px
     }
 
