@@ -774,6 +774,10 @@
   margin-left: -40px;
 }
 
+/* =========================================
+   SPECIFICATION BOXES + ICONS
+   ========================================= */
+
 .detail-row {
   position: relative;
   display: flex;
@@ -792,20 +796,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.025),
     0 6px 18px rgba(0, 0, 0, 0.12);
 
-  transition:
-    border-color .2s ease,
-    background .2s ease,
-    transform .2s ease,
-    box-shadow .2s ease;
+  transition: .2s ease;
 }
 
 .detail-row:hover {
   background: rgba(20, 32, 55, 0.9);
   border-color: rgba(80, 125, 220, 0.65);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.18),
-    0 0 18px rgba(55, 112, 255, 0.06);
-
   transform: translateY(-1px);
 }
 
@@ -813,8 +809,6 @@
 /* ICON BOX */
 
 .detail-row::before {
-  content: "•";
-
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -827,48 +821,51 @@
 
   background: linear-gradient(
     145deg,
-    rgba(55, 115, 255, 0.18),
-    rgba(130, 75, 255, 0.13)
+    rgba(55, 115, 255, .18),
+    rgba(130, 75, 255, .13)
   );
 
-  border: 1px solid rgba(80, 125, 220, 0.28);
+  border: 1px solid rgba(80, 125, 220, .28);
 
   color: #76a7ff;
-  font-size: 15px;
-
-  box-shadow:
-    0 0 15px rgba(55, 112, 255, 0.08);
+  font-size: 16px;
 }
 
 
-/* DIFFERENT ICONS FOR EACH SPECIFICATION */
+/* STORAGE */
 
-.detail-row:nth-child(1)::before {
-  content: "📱";
-}
-
-.detail-row:nth-child(2)::before {
+.detail-row[data-spec="Storage"]::before {
   content: "💾";
 }
 
-.detail-row:nth-child(3)::before {
+/* COLOR */
+
+.detail-row[data-spec="Color"]::before {
   content: "🎨";
 }
 
-.detail-row:nth-child(4)::before {
-  content: "🔋";
-}
+/* CONDITION */
 
-.detail-row:nth-child(5)::before {
+.detail-row[data-spec="Condition"]::before {
   content: "✨";
 }
 
-.detail-row:nth-child(6)::before {
-  content: "📦";
+/* BATTERY */
+
+.detail-row[data-spec="Battery Health"]::before {
+  content: "🔋";
 }
 
-.detail-row:nth-child(7)::before {
-  content: "📍";
+/* CYCLE COUNT */
+
+.detail-row[data-spec="Cycle Count"]::before {
+  content: "🔄";
+}
+
+/* ISSUE */
+
+.detail-row[data-spec="Issue"]::before {
+  content: "⚠";
 }
 
 
@@ -892,27 +889,7 @@
   color: #eef2ff;
   font-size: 13px;
   font-weight: 700;
-
   text-align: right;
+
   overflow-wrap: anywhere;
-}
-
-
-/* DESCRIPTION BOX */
-
-.description {
-  padding: 15px;
-
-  background: rgba(14, 23, 41, 0.65);
-  border: 1px solid rgba(70, 95, 140, 0.38);
-  border-radius: 12px;
-
-  color: #a4b0c3;
-  line-height: 1.7;
-  font-size: 13px;
-
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-
-  margin: 14px 0;
 }
