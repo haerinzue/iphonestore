@@ -135,7 +135,7 @@ async function refresh() {
       <div class="item-info">
         <strong>${esc(p.name)}</strong>
         <div>₱${Number(p.price || 0).toLocaleString('en-PH')} • ${esc(p.storage || '')} • ${esc(p.color || '')} • ${esc(p.condition || '')}</div>
-        <div>Battery: ${esc(p.battery || 'N/A')}</div>
+        <div>Battery: ${esc(p.battery || 'N/A')} • Cycle Count: ${esc(p.cycle_count ?? 'N/A')} • Issue: ${esc(p.issue || 'N/A')}</div>
       </div>
       <div class="item-buttons">
         <button class="edit" onclick="editPhone('${esc(p.id)}')">Edit</button>
@@ -169,6 +169,8 @@ window.editPhone = function(id) {
   phoneForm.elements.color.value = p.color || '';
   phoneForm.elements.condition.value = p.condition || '';
   phoneForm.elements.battery.value = p.battery || '';
+  phoneForm.elements.cycle_count.value = p.cycle_count ?? '';
+  phoneForm.elements.issue.value = p.issue || '';
   phoneForm.elements.description.value = p.description || '';
   $('formTitle').textContent = 'Edit iPhone';
   $('formHint').textContent = 'Update the listing and save your changes.';
@@ -241,6 +243,8 @@ phoneForm.addEventListener('submit', async e => {
       color: fd.get('color'),
       condition: fd.get('condition'),
       battery: fd.get('battery'),
+      cycle_count: fd.get('cycle_count') === '' ? null : Number(fd.get('cycle_count')),
+      issue: fd.get('issue'),
       description: fd.get('description')
     };
 

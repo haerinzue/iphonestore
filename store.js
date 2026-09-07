@@ -54,10 +54,10 @@ function showProduct(id){
       </div>
       <div class="detail-info">
         <p class="eyebrow">IPHONE LISTING</p><h2>${esc(activePhone.name)}</h2><div class="detail-price">${money(activePhone.price)}</div>
-        ${row('Storage',activePhone.storage)}${row('Color',activePhone.color)}${row('Condition',activePhone.condition)}${row('Battery Health',activePhone.battery)}
+        ${row('Storage',activePhone.storage)}${row('Color',activePhone.color)}${row('Condition',activePhone.condition)}${row('Battery Health',activePhone.battery)}${row('Cycle Count',activePhone.cycle_count)}${row('Issue',activePhone.issue)}
         ${activePhone.description ? `<div class="description">${esc(activePhone.description)}</div>` : ''}
         <button class="primary-btn" type="button" onclick="contactSeller()">Contact Seller</button>
-        <div class="description"><span class="status-dot"></span>Meetup only • Cash, GCash, or Bank Transfer</div>
+        <div class="description"><span class="location-icon" aria-hidden="true">📍</span>Meetup only • Cash, GCash, or Bank Transfer</div>
       </div>
     </div>
   </div>`;

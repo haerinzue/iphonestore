@@ -536,7 +536,14 @@
       border: 1px solid #303d56
     }
 
-    .status-dot {
+    .location-icon {
+      display: inline-block;
+      margin-right: 7px;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+.status-dot {
       display: inline-block;
       width: 7px;
       height: 7px;
