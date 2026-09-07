@@ -866,6 +866,7 @@
 
 .detail-row[data-spec="Issue"]::before {
   content: "⚠";
+  color: #ff4d4d;
 }
 
 
