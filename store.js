@@ -63,7 +63,12 @@ function showProduct(id){
   </div>`;
   modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open');
 }
-function row(label,value){return `<div class="detail-row"><span>${esc(label)}</span><strong>${esc(value || 'Not specified')}</strong></div>`;}
+function row(label,value){
+  return `<div class="detail-row" data-spec="${esc(label)}">
+    <span>${esc(label)}</span>
+    <strong>${esc(value || 'Not specified')}</strong>
+  </div>`;
+}
 function closeProduct(){const m=$('detailsModal');m.classList.remove('open');m.setAttribute('aria-hidden','true');activePhone=null; if(!$('contactModal')?.classList.contains('open')) document.body.classList.remove('modal-open');}
 function updateGallery(){
   if(!activePhone) return; const imgs=imagesOf(activePhone); if(!imgs.length) return;
