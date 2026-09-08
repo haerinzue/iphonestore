@@ -474,6 +474,14 @@ function renderSalesData() {
         <strong>${availableItems.length}</strong>
       </div>
 
+      <div class="sales-stat">
+        <span>Total Phone Value</span>
+        <strong>₱${totalPhoneValue.toLocaleString('en-PH', {
+          minimumFractionDigits: 2,
+           maximumFractionDigits: 2
+        })}</strong>
+      </div>
+
       <div class="sales-stat sold-stat">
         <span>Sold Units</span>
         <strong>${soldItems.length}</strong>
