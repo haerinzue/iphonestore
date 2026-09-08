@@ -12,6 +12,7 @@ const statusEl = $('status');
 const listEl = $('list');
 let editingId = null;
 let phonesCache = [];
+let salesModal = null;
 
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, m => ({
@@ -124,25 +125,61 @@ async function refresh() {
   }
 
   phonesCache = data || [];
+
   if (!phonesCache.length) {
     listEl.innerHTML = '<p class="muted">No listings yet.</p>';
     return;
   }
 
-  listEl.innerHTML = phonesCache.map(p => `
-    <div class="item">
-      <img class="thumb" src="${esc(p.images?.[0] || '')}" alt="${esc(p.name)}">
-      <div class="item-info">
-        <strong>${esc(p.name)}</strong>
-        <div>₱${Number(p.price || 0).toLocaleString('en-PH')} • ${esc(p.storage || '')} • ${esc(p.color || '')} • ${esc(p.condition || '')}</div>
-        <div>Battery: ${esc(p.battery || 'N/A')} • Cycle Count: ${esc(p.cycle_count ?? 'N/A')} • Issue: ${esc(p.issue || 'N/A')}</div>
+  listEl.innerHTML = phonesCache.map(p => {
+    const isSold = p.status === 'sold';
+
+    return `
+      <div class="item ${isSold ? 'sold-item' : ''}">
+        <img class="thumb" src="${esc(p.images?.[0] || '')}" alt="${esc(p.name)}">
+
+        <div class="item-info">
+          <strong>
+            ${esc(p.name)}
+            ${isSold ? '<span class="sold-badge">SOLD</span>' : ''}
+          </strong>
+
+          <div>
+            ₱${Number(p.price || 0).toLocaleString('en-PH')}
+            • ${esc(p.storage || '')}
+            • ${esc(p.color || '')}
+            • ${esc(p.condition || '')}
+          </div>
+
+          <div>
+            Battery: ${esc(p.battery || 'N/A')}
+            • Cycle Count: ${esc(p.cycle_count ?? 'N/A')}
+            • Issue: ${esc(p.issue || 'N/A')}
+          </div>
+
+          ${isSold && p.sold_at ? `
+            <div class="sold-date">
+              Sold: ${new Date(p.sold_at).toLocaleString('en-PH', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+              })}
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="item-buttons">
+          ${!isSold ? `
+            <button class="edit" onclick="editPhone('${esc(p.id)}')">Edit</button>
+            <button class="sold-btn" onclick="markAsSold('${esc(p.id)}')">Mark as Sold</button>
+          ` : `
+            <button class="edit" onclick="editPhone('${esc(p.id)}')">Edit</button>
+          `}
+
+          <button class="delete" onclick="removePhone('${esc(p.id)}')">Delete</button>
+        </div>
       </div>
-      <div class="item-buttons">
-        <button class="edit" onclick="editPhone('${esc(p.id)}')">Edit</button>
-        <button class="delete" onclick="removePhone('${esc(p.id)}')">Delete</button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function resetForm() {
@@ -291,6 +328,41 @@ phoneForm.addEventListener('submit', async e => {
   }
 });
 
+window.markAsSold = async function(id) {
+  const p = phonesCache.find(x => String(x.id) === String(id));
+  if (!p) return;
+
+  if (p.status === 'sold') {
+    alert('This listing is already marked as sold.');
+    return;
+  }
+
+  const confirmed = confirm(
+    `Mark "${p.name}" as SOLD?\n\nSale amount: ₱${Number(p.price || 0).toLocaleString('en-PH')}`
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await db
+    .from('phones')
+    .update({
+      status: 'sold',
+      sold_at: new Date().toISOString()
+    })
+    .eq('id', id);
+
+  if (error) {
+    alert('Failed to mark as sold: ' + error.message);
+    return;
+  }
+
+  await refresh();
+
+  if (salesModal && !salesModal.hidden) {
+    renderSalesData();
+  }
+};
+
 window.removePhone = async function(id) {
   if (!confirm('Delete this listing?')) return;
 
@@ -322,5 +394,157 @@ $('deleteAllBtn').addEventListener('click', async () => {
   resetForm();
   await refresh();
 });
+
+function createSalesModal() {
+  if (salesModal) return;
+
+  salesModal = document.createElement('div');
+  salesModal.id = 'salesModal';
+  salesModal.className = 'sales-modal';
+  salesModal.hidden = true;
+
+  salesModal.innerHTML = `
+    <div class="sales-overlay"></div>
+
+    <section class="sales-card">
+      <div class="sales-head">
+        <div>
+          <h2>Sales & Data</h2>
+          <p>Overview of your current listings and sales.</p>
+        </div>
+
+        <button id="closeSalesBtn" class="sales-close">&times;</button>
+      </div>
+
+      <div id="salesContent"></div>
+    </section>
+  `;
+
+  document.body.appendChild(salesModal);
+
+  salesModal.querySelector('.sales-overlay').addEventListener('click', closeSalesData);
+  salesModal.querySelector('#closeSalesBtn').addEventListener('click', closeSalesData);
+}
+
+function openSalesData() {
+  createSalesModal();
+  salesModal.hidden = false;
+  renderSalesData();
+}
+
+function closeSalesData() {
+  if (salesModal) {
+    salesModal.hidden = true;
+  }
+}
+
+function renderSalesData() {
+  if (!salesModal) return;
+
+  const totalListings = phonesCache.length;
+  const soldItems = phonesCache.filter(p => p.status === 'sold');
+  const availableItems = phonesCache.filter(p => p.status !== 'sold');
+
+  const totalSales = soldItems.reduce(
+    (sum, p) => sum + Number(p.price || 0),
+    0
+  );
+
+  const averageSale = soldItems.length
+    ? totalSales / soldItems.length
+    : 0;
+
+  const salesContent = salesModal.querySelector('#salesContent');
+
+  salesContent.innerHTML = `
+    <div class="sales-stats">
+
+      <div class="sales-stat">
+        <span>Total Listings</span>
+        <strong>${totalListings}</strong>
+      </div>
+
+      <div class="sales-stat available-stat">
+        <span>Available Units</span>
+        <strong>${availableItems.length}</strong>
+      </div>
+
+      <div class="sales-stat sold-stat">
+        <span>Sold Units</span>
+        <strong>${soldItems.length}</strong>
+      </div>
+
+      <div class="sales-stat sales-total-stat">
+        <span>Total Sales</span>
+        <strong>₱${totalSales.toLocaleString('en-PH', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</strong>
+      </div>
+
+      <div class="sales-stat">
+        <span>Average Sale Price</span>
+        <strong>₱${averageSale.toLocaleString('en-PH', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}</strong>
+      </div>
+
+    </div>
+
+    <div class="sales-history">
+      <div class="sales-history-head">
+        <div>
+          <h3>Sales History</h3>
+          <p>Recently sold iPhones.</p>
+        </div>
+      </div>
+
+      ${
+        soldItems.length
+          ? soldItems
+              .slice()
+              .sort((a, b) => {
+                const dateA = new Date(a.sold_at || 0).getTime();
+                const dateB = new Date(b.sold_at || 0).getTime();
+                return dateB - dateA;
+              })
+              .map(p => `
+                <div class="sale-row">
+
+                  <div class="sale-info">
+                    <strong>${esc(p.name)}</strong>
+
+                    <span>
+                      ${esc(p.storage || '')}
+                      ${p.color ? ' • ' + esc(p.color) : ''}
+                    </span>
+
+                    <small>
+                      ${
+                        p.sold_at
+                          ? new Date(p.sold_at).toLocaleString('en-PH', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short'
+                            })
+                          : 'Sold date unavailable'
+                      }
+                    </small>
+                  </div>
+
+                  <div class="sale-price">
+                    ₱${Number(p.price || 0).toLocaleString('en-PH')}
+                  </div>
+
+                </div>
+              `)
+              .join('')
+          : '<p class="sales-empty">No sold units yet.</p>'
+      }
+    </div>
+  `;
+}
+
+$('salesDataBtn').addEventListener('click', openSalesData);
 
 boot();
