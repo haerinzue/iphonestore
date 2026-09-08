@@ -566,4 +566,8 @@ function renderSalesData() {
 
 $('salesDataBtn').addEventListener('click', openSalesData);
 
+window.addEventListener('pagehide', () => {
+  db.auth.signOut();
+});
+
 boot();
