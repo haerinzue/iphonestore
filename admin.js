@@ -450,6 +450,11 @@ function renderSalesData() {
     0
   );
 
+  const totalPhoneValue = availableItems.reduce(
+  (sum, p) => sum + Number(p.price || 0),
+  0
+  );
+
   const averageSale = soldItems.length
     ? totalSales / soldItems.length
     : 0;
