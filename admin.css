@@ -225,11 +225,13 @@ small {
   border: 0;
   background: linear-gradient(100deg, #3f83ff, #8857f2);
   color: #fff;
+  font-weight: 650;
 }
 .delete {
   border: 0;
   background: #e5484d;
   color: #fff;
+  font-weight: 650;
 }
 .auth-wrap {
   min-height: 100vh;
@@ -517,6 +519,7 @@ small {
   border: 0;
   background: #d97706;
   color: #fff;
+  font-weight: 650;
 }
 
 .sold-btn:hover {
