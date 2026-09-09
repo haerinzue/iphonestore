@@ -1,12 +1,6 @@
 const SUPABASE_URL = 'https://fvxpfpqkdsznvvreicfc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dC4BDvHAExevhXghB6-8rQ_RLtR12zB';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false
-  }
-});
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = id => document.getElementById(id);
 const loginScreen = $('loginScreen');
@@ -566,8 +560,10 @@ function renderSalesData() {
 
 $('salesDataBtn').addEventListener('click', openSalesData);
 
-window.addEventListener('pagehide', () => {
-  db.auth.signOut();
-});
+const ADMIN_TAB_KEY = 'asgt_admin_tab';
+
+if (!sessionStorage.getItem(ADMIN_TAB_KEY)) {
+  sessionStorage.setItem(ADMIN_TAB_KEY, 'active');
+}
 
 boot();
