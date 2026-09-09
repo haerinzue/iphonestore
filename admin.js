@@ -93,12 +93,14 @@ loginForm.addEventListener('submit', async e => {
     return;
   }
 
-  loginForm.reset();
-  showApp();
-  await refresh();
+sessionStorage.setItem(ADMIN_TAB_KEY, 'active');
+loginForm.reset();
+showApp();
+await refresh();
 });
 
 $('logoutBtn').addEventListener('click', async () => {
+  sessionStorage.removeItem('asgt_admin_tab');
   await db.auth.signOut();
   resetForm();
   showLogin();
@@ -561,9 +563,13 @@ function renderSalesData() {
 $('salesDataBtn').addEventListener('click', openSalesData);
 
 const ADMIN_TAB_KEY = 'asgt_admin_tab';
+const hadAdminTabSession = sessionStorage.getItem(ADMIN_TAB_KEY) === 'active';
 
-if (!sessionStorage.getItem(ADMIN_TAB_KEY)) {
-  sessionStorage.setItem(ADMIN_TAB_KEY, 'active');
+async function enforceAdminTabSession() {
+  if (!hadAdminTabSession) {
+    await db.auth.signOut();
+    showLogin();
+  }
 }
 
-boot();
+enforceAdminTabSession().then(() => boot());
